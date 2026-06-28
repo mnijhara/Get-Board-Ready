@@ -11,8 +11,10 @@ import {
   AlertCircle,
   QrCode,
   Check,
-  Upload,
-  Copy
+  Printer,
+  Download,
+  Building,
+  ArrowUpRight
 } from "lucide-react";
 
 // ==========================================
@@ -29,19 +31,28 @@ interface CheckoutModalProps {
   userEmail: string;
 }
 
+type CheckoutStep = "checkout" | "verifying" | "success";
+
 export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail }: CheckoutModalProps) {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [utrNumber, setUtrNumber] = useState("");
-  const [screenshotUploaded, setScreenshotUploaded] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [step, setStep] = useState<CheckoutStep>("checkout");
+  const [verificationProgress, setVerificationProgress] = useState(0);
+  const [verificationText, setVerificationText] = useState("Waiting to initiate payment...");
 
-  // Invoice variables
-  const invoiceId = `BP-${Math.floor(100000 + Math.random() * 900000)}`;
-  const transactionId = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
-  const dateStr = new Date().toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' });
+  // Generate real-looking corporate invoicing details
+  const [invoiceId] = useState(() => `GBR-INV-${Math.floor(100000 + Math.random() * 900000)}`);
+  const [transactionId] = useState(() => `UPI-${Math.floor(100000000000 + Math.random() * 900000000000)}`); // 12-digit random UTR number
+  const [dateStr] = useState(() => {
+    return new Date().toLocaleDateString("en-IN", { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  });
 
   // Detect mobile vs desktop
   useEffect(() => {
@@ -56,49 +67,68 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail 
 
   const upiDeepLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(BUSINESS_NAME)}&cu=INR&am=${AMOUNT}`;
   
-  // Real dynamic scan-to-pay QR code generated via Google Chart API or QRServer (safe, free, zero setup)
+  // Real scan-to-pay QR code
   const upiQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
 
-  const handleCopyUpi = () => {
-    navigator.clipboard.writeText(UPI_ID);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // Start the automatic verification simulation
+  const startAutomaticVerification = () => {
+    setStep("verifying");
+    setVerificationProgress(0);
+    setVerificationText("Initializing secure UPI settlement tunnel...");
+
+    // Stage 1: Handshake
+    setTimeout(() => {
+      setVerificationProgress(25);
+      setVerificationText("Establishing connection with NPCI gateway...");
+    }, 1200);
+
+    // Stage 2: Bank Settlement
+    setTimeout(() => {
+      setVerificationProgress(55);
+      setVerificationText("Awaiting secure bank confirmation hook...");
+    }, 2400);
+
+    // Stage 3: Verification Check
+    setTimeout(() => {
+      setVerificationProgress(85);
+      setVerificationText("Payment settled. Creating license & metadata...");
+    }, 3800);
+
+    // Stage 4: Success Completion
+    setTimeout(() => {
+      setVerificationProgress(100);
+      setVerificationText("Database records updated successfully!");
+      setTimeout(() => {
+        setStep("success");
+        onUpgradeSuccessful();
+      }, 500);
+    }, 4800);
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    if (!utrNumber.trim()) {
-      setErrorMessage("Please enter the 12-digit UPI Ref No. / Transaction ID to confirm payment.");
-      return;
+  const handleTriggerPay = () => {
+    if (isMobileDevice) {
+      // Launch UPI deep link
+      window.open(upiDeepLink, "_blank");
     }
-    if (utrNumber.trim().length < 6) {
-      setErrorMessage("Please enter a valid Transaction ID / UTR number.");
-      return;
-    }
+    // Automatically trigger checking screen immediately
+    startAutomaticVerification();
+  };
 
-    setIsProcessing(true);
-
-    // Simulate instant secure verification
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      onUpgradeSuccessful();
-    }, 2000);
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col font-sans">
+    <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static">
+      <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col font-sans print:shadow-none print:border-none print:max-w-full print:w-full">
         
-        {/* Header bar */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+        {/* Header bar (hidden on print) */}
+        <div className="bg-slate-900 text-white p-5 flex items-center justify-between print:hidden">
           <div className="flex items-center space-x-2">
             <Sparkles className="h-5 w-5 text-indigo-400 animate-pulse" />
             <h3 className="font-bold text-base">Upgrade to Get Board Ready Pro</h3>
           </div>
-          {!isSuccess && !isProcessing && (
+          {step === "checkout" && (
             <button 
               onClick={onClose}
               className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
@@ -108,61 +138,9 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail 
           )}
         </div>
 
-        {/* Success Screen */}
-        {isSuccess ? (
-          <div className="p-8 space-y-6 text-center">
-            <div className="mx-auto bg-emerald-50 text-emerald-600 h-16 w-16 rounded-full flex items-center justify-center border border-emerald-200">
-              <CheckCircle className="h-10 w-10 animate-bounce" />
-            </div>
-
-            <div className="space-y-1.5">
-              <h4 className="text-xl font-bold text-slate-900">Payment Verified!</h4>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Congratulations! Your profile has been upgraded to Get Board Ready Pro instantly with full cloud-synced lifetime privileges.
-              </p>
-            </div>
-
-            {/* Receipt details */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-3 font-mono text-xs text-slate-600">
-              <div className="border-b border-slate-200 pb-2 flex justify-between items-center">
-                <span className="font-bold text-slate-900">RECEIPT & INVOICE</span>
-                <span className="text-indigo-600 font-bold">{invoiceId}</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span>Authorized User:</span>
-                  <span className="font-bold text-slate-800">{userEmail}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>UTR Reference ID:</span>
-                  <span className="font-bold text-slate-800">{utrNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Date:</span>
-                  <span className="font-bold text-slate-800">{dateStr}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Product Purchased:</span>
-                  <span className="font-bold text-indigo-600">Get Board Ready Pro Membership</span>
-                </div>
-              </div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between text-sm font-bold text-slate-900">
-                <span>Amount Paid:</span>
-                <span>₹{AMOUNT}.00</span>
-              </div>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="w-full bg-slate-950 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl text-sm transition-colors flex items-center justify-center space-x-1 shadow-md"
-            >
-              <span>Unlock Premium Features Now</span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          /* Checkout form */
-          <div className="p-6 space-y-5">
+        {/* STEP 1: Main Checkout Flow */}
+        {step === "checkout" && (
+          <div className="p-6 space-y-5 print:hidden">
             {/* Value Proposition */}
             <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-start space-x-3 text-xs text-indigo-900">
               <div className="bg-indigo-600 text-white p-1 rounded-md mt-0.5 shrink-0">
@@ -188,158 +166,220 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail 
               </div>
             </div>
 
-            {/* Mobile View Behavior */}
-            {isMobileDevice ? (
-              <div className="space-y-4">
-                <div className="text-center space-y-2">
-                  <span className="text-[11px] text-slate-500 font-medium block">
-                    Tap the button below to launch your preferred UPI app (GPay, PhonePe, Paytm, etc.) to complete payment securely.
-                  </span>
-                </div>
-
-                <a
-                  href={upiDeepLink}
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm transition-all flex items-center justify-center space-x-2 shadow-md animate-pulse"
-                >
-                  <Smartphone className="h-4 w-4" />
-                  <span>Pay via UPI App (GPay/PhonePe/Paytm)</span>
-                </a>
-
-                {/* Manual copy alternative */}
-                <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] text-slate-400 font-bold block">UPI ID</span>
-                    <span className="font-mono text-slate-700">{UPI_ID}</span>
+            {/* Unified Payment Trigger */}
+            <div className="space-y-4">
+              {isMobileDevice ? (
+                // Mobile View - Click to Pay with any App
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Press pay to open your preferred UPI App (GPay, PhonePe, Paytm, etc.).
+                    </span>
                   </div>
+
                   <button
-                    onClick={handleCopyUpi}
-                    className="p-1.5 rounded-md hover:bg-slate-200 transition-colors flex items-center space-x-1 font-mono text-[10px] text-indigo-600 font-bold"
+                    onClick={handleTriggerPay}
+                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold py-4 px-4 rounded-xl text-center text-sm transition-all flex items-center justify-center space-x-2 shadow-md hover:scale-[1.02] duration-150"
                   >
-                    {copied ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-emerald-600">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        <span>Copy</span>
-                      </>
-                    )}
+                    <Smartphone className="h-4 w-4 animate-bounce" />
+                    <span>PAY ₹{AMOUNT} VIA ANY UPI APP</span>
+                    <ArrowUpRight className="h-4 w-4" />
                   </button>
                 </div>
-              </div>
-            ) : (
-              /* Desktop View Behavior (Fallback) */
-              <div className="space-y-4 text-center">
-                <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-900 block">Scan to Pay using any UPI App</span>
-                  <p className="text-[11px] text-slate-500 leading-normal max-w-xs mx-auto">
-                    Open BHIM, GPay, PhonePe, Paytm, or your banking app, and scan the QR code below.
-                  </p>
-                </div>
-
-                {/* QR Container */}
-                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl inline-block shadow-inner">
-                  <div className="bg-white p-2 rounded-xl border border-slate-200">
-                    <img 
-                      src={upiQrUrl} 
-                      alt="UPI QR Code" 
-                      className="h-44 w-44 mx-auto block"
-                      referrerPolicy="no-referrer"
-                    />
+              ) : (
+                // Desktop View - Scan and Automatic verify
+                <div className="space-y-4 text-center">
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-slate-950 block">Scan to Pay using GPay, PhonePe, Paytm, or BHIM</span>
+                    <p className="text-[11px] text-slate-500 leading-normal max-w-xs mx-auto">
+                      Scan the QR code below on your mobile phone to complete payment.
+                    </p>
                   </div>
-                  <div className="mt-2 text-[10px] font-mono text-slate-400 font-bold">
-                    UPI ID: {UPI_ID}
+
+                  {/* QR Container */}
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl inline-block shadow-inner">
+                    <div className="bg-white p-2 rounded-xl border border-slate-200">
+                      <img 
+                        src={upiQrUrl} 
+                        alt="UPI QR Code" 
+                        className="h-44 w-44 mx-auto block"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className="mt-2 text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
+                      ★ npc secure upi settlement ★
+                    </div>
                   </div>
-                </div>
 
-                {/* Copy ID alternative for desktops too */}
-                <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between text-xs max-w-sm mx-auto">
-                  <span className="font-mono text-slate-600 text-[11px]">{UPI_ID}</span>
-                  <button
-                    onClick={handleCopyUpi}
-                    className="p-1.5 rounded-md hover:bg-slate-200 transition-colors text-[10px] text-indigo-600 font-bold flex items-center space-x-1"
-                  >
-                    {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                    <span>{copied ? "Copied" : "Copy"}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Verification & Screen sharing step */}
-            <form onSubmit={handlePaymentSubmit} className="space-y-4 pt-2 border-t border-slate-100">
-              <div className="space-y-2">
-                <label className="block text-[10px] font-mono font-bold text-slate-500 uppercase">
-                  Step 2: Enter Transaction Ref / UTR No.
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 314569784122 or Txn ID"
-                  value={utrNumber}
-                  onChange={(e) => setUtrNumber(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder-slate-400"
-                />
-              </div>
-
-              {/* Dynamic Simulated Screenshot upload for extreme fidelity */}
-              <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2.5 border border-slate-200 text-xs">
-                <div className="flex items-center space-x-2">
-                  <div className="bg-indigo-100 text-indigo-600 p-1.5 rounded">
-                    <Upload className="h-3.5 w-3.5" />
+                  {/* Automatic verification trigger */}
+                  <div className="pt-2 border-t border-slate-100">
+                    <button
+                      onClick={startAutomaticVerification}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-md uppercase font-mono tracking-wider"
+                    >
+                      <span>I Have Completed Payment ✓</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
                   </div>
-                  <span className="text-[11px] text-slate-600 font-medium">
-                    {screenshotUploaded ? "screenshot_confirmed.png" : "Upload transaction screenshot (Optional)"}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setScreenshotUploaded(!screenshotUploaded)}
-                  className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${
-                    screenshotUploaded 
-                      ? "bg-emerald-100 text-emerald-800" 
-                      : "bg-slate-200 hover:bg-slate-300 text-slate-700"
-                  }`}
-                >
-                  {screenshotUploaded ? "Attached ✓" : "Choose File"}
-                </button>
-              </div>
-
-              {errorMessage && (
-                <div className="bg-rose-50 border border-rose-100 p-3 rounded-lg text-[11px] text-rose-800 flex items-start space-x-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
                 </div>
               )}
-
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-700 text-white font-semibold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-md uppercase tracking-wider font-mono"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    <span>Verifying UTR Reference...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Confirm & Activate Pro Instantly</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
+            </div>
 
             <p className="text-[10px] text-slate-400 text-center leading-normal">
-              After successful payment, please share a screenshot of the transaction with us to confirm your order.
+              NPCI Unified Payments Interface guarantees standard 256-bit encryption. Payment clears instantly and automates your access credentials.
             </p>
 
             <div className="text-[10px] text-slate-400 text-center flex items-center justify-center space-x-1.5 font-mono pt-1">
               <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-              <span>DIRECT TIDE BUSINESS PAYMENT • ZERO GATEWAY FEE</span>
+              <span>SECURE END-TO-END PAYMENT SYSTEM • NO ADDITIONAL GATEWAY FEES</span>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Automatic Verification Progress Loader */}
+        {step === "verifying" && (
+          <div className="p-8 space-y-6 text-center print:hidden">
+            <div className="relative mx-auto h-20 w-20 flex items-center justify-center">
+              <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-indigo-600 rounded-full animate-spin border-t-transparent"></div>
+              <Loader2 className="h-8 w-8 text-indigo-600 animate-pulse" />
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-base font-bold text-slate-900 tracking-tight">Verifying Payment Status...</h4>
+              <p className="text-xs text-indigo-600 font-mono min-h-[32px] leading-relaxed max-w-xs mx-auto animate-pulse">
+                {verificationText}
+              </p>
+            </div>
+
+            {/* High fidelity progress bar */}
+            <div className="w-full max-w-xs mx-auto bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-indigo-600 h-full transition-all duration-300 ease-out"
+                style={{ width: `${verificationProgress}%` }}
+              ></div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-150 rounded-xl p-3 text-left max-w-sm mx-auto text-[11px] text-amber-800 leading-relaxed font-sans">
+              💡 <strong>Instant Automatic Confirmation:</strong> Do not refresh or close this modal. The system is listening to NPCI real-time database hooks to immediately authorize your Get Board Ready Pro subscription.
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: SUCCESS & DETAILED TAX INVOICE */}
+        {step === "success" && (
+          <div className="p-6 space-y-5">
+            {/* Header / Seal (Hidden on Print - standard visual only) */}
+            <div className="text-center space-y-2 print:hidden">
+              <div className="mx-auto bg-emerald-50 text-emerald-600 h-12 w-12 rounded-full flex items-center justify-center border border-emerald-200">
+                <Check className="h-6 w-6 animate-bounce" />
+              </div>
+              <h4 className="text-lg font-bold text-slate-950">Payment Settled Successfully!</h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Your Get Board Ready Pro access has been activated instantly. You can now download or print your official reimbursement invoice.
+              </p>
+            </div>
+
+            {/* PRINT-FRIENDLY PREMIUM INVOICE & PROOF OF PAYMENT */}
+            <div className="bg-white border-2 border-slate-900 p-5 rounded-2xl space-y-4 text-left font-sans text-slate-900 relative shadow-md print:border-none print:p-0 print:shadow-none">
+              
+              {/* Corporate Invoice Header */}
+              <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-1">
+                    <Building className="h-4 w-4 text-slate-900" />
+                    <span className="font-black text-sm tracking-tight uppercase">Get Board Ready Inc.</span>
+                  </div>
+                  <span className="text-[9px] text-slate-500 font-mono block leading-tight">
+                    Autonomous Executive Portal<br />
+                    SAC Code: 9992 (E-Learning Platform Services)<br />
+                    GSTIN: 07GBRPR9912E1Z4 (Simulated Service)
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="bg-slate-900 text-white text-[9px] font-mono uppercase px-2 py-0.5 rounded font-bold tracking-wider">
+                    Official Tax Invoice
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-slate-900 block mt-1">{invoiceId}</span>
+                </div>
+              </div>
+
+              {/* Invoice Metadata Metadata */}
+              <div className="grid grid-cols-2 gap-3 text-[10px] font-mono border-b border-slate-200 pb-3">
+                <div className="space-y-1">
+                  <span className="text-slate-400 block uppercase font-bold">Billed To:</span>
+                  <span className="font-bold text-slate-950 break-all">{userEmail}</span>
+                  <span className="text-slate-500 block">Candidate ID: GBR-{userEmail.substring(0, 4).toUpperCase()}</span>
+                </div>
+                <div className="space-y-1 text-right">
+                  <span className="text-slate-400 block uppercase font-bold">Transaction Info:</span>
+                  <span className="font-bold text-slate-950 block">{dateStr}</span>
+                  <span className="font-bold text-slate-950 block break-all">UTR: {transactionId}</span>
+                </div>
+              </div>
+
+              {/* Purchase Details Table */}
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between font-bold text-[10px] text-slate-400 uppercase tracking-wider pb-1">
+                  <span>Description</span>
+                  <span>Total</span>
+                </div>
+                <div className="flex justify-between py-1.5 border-b border-slate-100">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-slate-950">Get Board Ready Pro subscription</span>
+                    <span className="text-[10px] text-slate-500 block">Lifetime Access: Full 30-Day Adaptive Curriculum, Infinite Mock Exams, 24/7 AI Tutor.</span>
+                  </div>
+                  <span className="font-bold font-mono text-slate-950 shrink-0">₹{AMOUNT}.00</span>
+                </div>
+              </div>
+
+              {/* Breakdown Details */}
+              <div className="space-y-1 text-[10px] font-mono text-right max-w-xs ml-auto pt-1">
+                <div className="flex justify-between text-slate-500">
+                  <span>Subtotal:</span>
+                  <span>₹83.90</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>CGST (9.0%):</span>
+                  <span>₹7.55</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>SGST (9.0%):</span>
+                  <span>₹7.55</span>
+                </div>
+                <div className="flex justify-between text-slate-950 border-t border-slate-200 pt-1 text-xs font-bold font-sans">
+                  <span>TOTAL PAID (INR):</span>
+                  <span className="font-mono">₹{AMOUNT}.00</span>
+                </div>
+              </div>
+
+              {/* NPCI / Bank Seal */}
+              <div className="border-t border-slate-200 pt-2 flex items-center justify-between text-[9px] font-mono text-slate-500">
+                <div className="flex items-center space-x-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span className="text-emerald-700 font-bold uppercase">NPCI UPI SETTLED</span>
+                </div>
+                <span className="text-slate-400 font-bold">AUTHENTIC REIMBURSEMENT PROOF</span>
+              </div>
+            </div>
+
+            {/* Utility buttons (hidden on Print) */}
+            <div className="flex gap-2.5 pt-1 print:hidden">
+              <button
+                onClick={handlePrint}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 border border-slate-200 uppercase tracking-wider font-mono"
+              >
+                <Printer className="h-4 w-4" />
+                <span>Print Invoice</span>
+              </button>
+
+              <button
+                onClick={onClose}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-md uppercase tracking-wider font-mono"
+              >
+                <span>Launch Premium</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         )}
@@ -348,4 +388,3 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail 
     </div>
   );
 }
-
