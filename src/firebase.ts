@@ -98,3 +98,26 @@ function getCachedMockAttempts(userId: string): MockAttempt[] {
   const cached = localStorage.getItem(`mock_attempts_${userId}`);
   return cached ? JSON.parse(cached) : [];
 }
+
+export interface ContactRequest {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  profession: string;
+  message: string;
+  timestamp: string;
+}
+
+/**
+ * Save contact or registration request
+ */
+export async function saveContactRequest(request: ContactRequest): Promise<void> {
+  try {
+    const contactCol = collection(db, "contactRequests");
+    await addDoc(contactCol, request);
+  } catch (error) {
+    console.error("Firestore saveContactRequest error:", error);
+  }
+}
+

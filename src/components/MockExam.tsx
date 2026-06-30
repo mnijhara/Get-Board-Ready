@@ -228,7 +228,7 @@ export default function MockExam({ userId, userProfession, onSaveAttempt, attemp
 
             <button
               onClick={onTriggerUpgrade}
-              className="w-full max-w-sm bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-md font-mono"
+              className="w-full max-w-sm bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-md font-mono animate-pulse"
             >
               <span>UPGRADE FOR UNLIMITED EXAMS (₹99 ONLY)</span>
               <ArrowRight className="h-4 w-4" />

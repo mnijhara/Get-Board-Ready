@@ -239,7 +239,7 @@ export default function Dashboard({
               </p>
               <button 
                 onClick={onTriggerUpgrade}
-                className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center space-x-1.5"
+                className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center space-x-1.5 shadow-md hover:scale-[1.01] duration-150"
               >
                 <span>Upgrade for ₹99 Only</span>
               </button>

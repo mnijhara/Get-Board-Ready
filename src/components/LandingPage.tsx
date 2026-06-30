@@ -1341,7 +1341,7 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
               { role: "CFO & VP Finance", action: "passed Mock Exam #2 with a stellar score of 88%", time: "3 mins ago", location: "Mumbai", icon: "✓" },
               { role: "Senior Corporate Counsel", action: "queried Boardroom AI tutor regarding Regulation 17(1A) age disclosure limits", time: "12 mins ago", location: "New Delhi", icon: "💬" },
               { role: "Managing Director", action: "completed Day 6 Module (S.188 Related Party Transaction controls)", time: "28 mins ago", location: "Bengaluru", icon: "📁" },
-              { role: "Audit Committee Chair", action: "upgraded to Get Board Ready Pro utilizing instant UPI transfer", time: "44 mins ago", location: "Hyderabad", icon: "⚡" }
+              { role: "Audit Committee Chair", action: "registered for full Get Board Ready Pro access", time: "44 mins ago", location: "Hyderabad", icon: "⚡" }
             ].map((item, index) => (
               <div key={index} className="flex items-start space-x-3 bg-slate-50/50 p-3 rounded-xl border border-slate-150 text-xs">
                 <div className="bg-slate-900 text-white h-6 w-6 rounded-md flex items-center justify-center font-mono font-bold shrink-0 mt-0.5 text-[10px]">
