@@ -121,3 +121,36 @@ export async function saveContactRequest(request: ContactRequest): Promise<void>
   }
 }
 
+
+/**
+ * Store premium status in Firestore (called after verified payment)
+ */
+export async function savePremiumStatus(userId: string, email: string, paymentId: string): Promise<void> {
+  try {
+    const paymentRef = doc(db, "payments", userId);
+    await setDoc(paymentRef, {
+      isPremium: true,
+      userEmail: email,
+      paymentId,
+      activatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Firestore savePremiumStatus error:", error);
+  }
+}
+
+/**
+ * Check premium status from Firestore (cross-device support)
+ */
+export async function checkPremiumStatus(userId: string): Promise<boolean> {
+  try {
+    const paymentRef = doc(db, "payments", userId);
+    const snap = await getDoc(paymentRef);
+    if (snap.exists()) {
+      return snap.data()?.isPremium === true;
+    }
+  } catch (error) {
+    console.error("Firestore checkPremiumStatus error:", error);
+  }
+  return false;
+}

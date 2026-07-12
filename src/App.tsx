@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { UserProfile, MockAttempt } from "./types";
 import { syllabus } from "./data/syllabus";
-import { saveUserProfile, getUserProfile, saveMockAttempt, getMockAttempts } from "./firebase";
+import { saveUserProfile, getUserProfile, saveMockAttempt, getMockAttempts, savePremiumStatus, checkPremiumStatus } from "./firebase";
 import LandingPage from "./components/LandingPage";
 import Dashboard from "./components/Dashboard";
 import DailyLesson from "./components/DailyLesson";
@@ -22,28 +22,84 @@ export default function App() {
     loadCachedSession();
   }, []);
 
-  // Detect Razorpay Payment Page redirect: ?payment=success
+  // Detect Razorpay Payment Page redirect and verify via Cloudflare Worker
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("payment") === "success") {
-      localStorage.setItem("iica_payment_success", "true");
+    const paymentStatus = params.get("razorpay_payment_link_status") || params.get("payment");
+    
+    if (paymentStatus === "paid" || paymentStatus === "success") {
+      const paymentId = params.get("razorpay_payment_id") || "";
+      const paymentLinkId = params.get("razorpay_payment_link_id") || "";
+      const paymentLinkRefId = params.get("razorpay_payment_link_reference_id") || "";
+      const signature = params.get("razorpay_signature") || "";
+      
+      // Clean URL immediately
       window.history.replaceState({}, document.title, "/");
+
+      // Store params for verification after profile loads
+      if (paymentId) {
+        localStorage.setItem("iica_pending_payment", JSON.stringify({
+          razorpay_payment_id: paymentId,
+          razorpay_payment_link_id: paymentLinkId,
+          razorpay_payment_link_reference_id: paymentLinkRefId,
+          razorpay_payment_link_status: paymentStatus,
+          razorpay_signature: signature
+        }));
+      } else {
+        // Fallback: no signature params (manual test)
+        localStorage.setItem("iica_payment_success", "true");
+      }
     }
   }, []);
 
   const loadCachedSession = async () => {
     setIsLoading(true);
     const cachedUserId = localStorage.getItem("iica_user_id");
-    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
+
     if (cachedUserId) {
       const profile = await getUserProfile(cachedUserId);
       if (profile) {
-        // Auto-upgrade to premium if payment was detected
-        if (paymentSuccess && !profile.isPremium) {
+
+        // Check Firebase for premium status (cross-device)
+        const firebasePremium = await checkPremiumStatus(cachedUserId);
+        if (firebasePremium && !profile.isPremium) {
           profile.isPremium = true;
           await saveUserProfile(cachedUserId, profile);
+        }
+
+        // Handle pending Razorpay payment verification
+        const pendingPayment = localStorage.getItem("iica_pending_payment");
+        const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
+
+        if (pendingPayment && !profile.isPremium) {
+          try {
+            const paymentData = JSON.parse(pendingPayment);
+            const res = await fetch("https://getboardready-payments.workers.dev/api/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...paymentData,
+                userId: cachedUserId,
+                userEmail: profile.email
+              })
+            });
+            const result = await res.json();
+            if (result.success) {
+              profile.isPremium = true;
+              await saveUserProfile(cachedUserId, profile);
+            }
+          } catch (e) {
+            console.error("Payment verification error:", e);
+          }
+          localStorage.removeItem("iica_pending_payment");
+        } else if (paymentSuccess && !profile.isPremium) {
+          // Fallback for manual test mode
+          profile.isPremium = true;
+          await saveUserProfile(cachedUserId, profile);
+          await savePremiumStatus(cachedUserId, profile.email, "manual_test");
           localStorage.removeItem("iica_payment_success");
         }
+
         setUserProfile(profile);
         const history = await getMockAttempts(cachedUserId);
         setMockAttempts(history);
@@ -138,6 +194,7 @@ export default function App() {
     };
     setUserProfile(updatedProfile);
     await saveUserProfile(userProfile.id, updatedProfile);
+    await savePremiumStatus(userProfile.id, userProfile.email, "payment_verified");
   };
 
   if (isLoading) {
