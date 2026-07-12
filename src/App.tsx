@@ -22,12 +22,28 @@ export default function App() {
     loadCachedSession();
   }, []);
 
+  // Detect Razorpay Payment Page redirect: ?payment=success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      localStorage.setItem("iica_payment_success", "true");
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
+
   const loadCachedSession = async () => {
     setIsLoading(true);
     const cachedUserId = localStorage.getItem("iica_user_id");
+    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
     if (cachedUserId) {
       const profile = await getUserProfile(cachedUserId);
       if (profile) {
+        // Auto-upgrade to premium if payment was detected
+        if (paymentSuccess && !profile.isPremium) {
+          profile.isPremium = true;
+          await saveUserProfile(cachedUserId, profile);
+          localStorage.removeItem("iica_payment_success");
+        }
         setUserProfile(profile);
         const history = await getMockAttempts(cachedUserId);
         setMockAttempts(history);

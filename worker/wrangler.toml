@@ -1,0 +1,7 @@
+name = "getboardready-payments"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Secrets are set via: wrangler secret put RAZORPAY_KEY_ID
+# Never hardcode secrets here
