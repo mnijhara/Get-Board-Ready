@@ -71,25 +71,38 @@ I am configured with full-fidelity context of your background as a **${userProfe
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/ai-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMsg],
-          userProfession: userProfession
-        })
-      });
+      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+      const systemInstruction = `You are the "AI Boardroom Tutor" — a world-class legal expert in the Companies Act 2013 (India), SEBI LODR Regulations, financial forensics, corporate governance, and ethical board practices. Help a senior executive (background: ${userProfession || "General Executive"}) prepare for and pass the IICA Online Proficiency Self-Assessment Test. Provide authoritative responses citing specific sections (e.g., Section 149(6), Section 188), formatted as professional Board Advisory Memos with clear headers and bullet points.`;
+
+      const geminiMessages = [...messages, userMsg]
+        .filter(m => m.id !== "init")
+        .map(m => ({
+          role: m.sender === "user" ? "user" : "model",
+          parts: [{ text: m.text }]
+        }));
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemInstruction }] },
+            contents: geminiMessages
+          })
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Tutor module lost connection. Please retry.");
       }
 
       const data = await response.json();
-      
+
       const aiMsg: Message = {
         id: `msg_${Date.now() + 1}`,
         sender: "ai",
-        text: data.text || "I apologize, my analysis engine returned an empty response. Let me try again if you resubmit.",
+        text: data.candidates?.[0]?.content?.parts?.[0]?.text || "I apologize, my analysis engine returned an empty response. Please resubmit.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 

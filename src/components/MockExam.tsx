@@ -77,21 +77,37 @@ export default function MockExam({ userId, userProfession, onSaveAttempt, attemp
     setCurrentIndex(0);
 
     try {
-      const response = await fetch("/api/generate-exam", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          categories: selectedCats,
-          questionCount: questionCount,
-          userProfession: userProfession
-        })
-      });
+      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+      const prompt = `You are the IICA Exam Blueprint Generator. Generate exactly ${questionCount} Multiple Choice Questions for the Independent Directors Databank Online Proficiency Self-Assessment Test.
+Categories: ${selectedCats.join(", ")}.
+Make 60% situational/case-study type and 40% threshold/memorization type.
+Each question must have a thorough explanation citing the precise legal section.
+
+Return ONLY a valid JSON object:
+{ "questions": [{ "question": "...", "category": "Companies Act", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." }] }
+Return only the JSON, no markdown fences.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Unable to establish communication with the exam server.");
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error("Empty response from Gemini");
+
+      const data = JSON.parse(text.replace(/```json|```/g, "").trim());
       if (!data.questions || data.questions.length === 0) {
         throw new Error("Exam paper returned with blank questions. Let's try again.");
       }

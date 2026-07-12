@@ -74,28 +74,47 @@ export default function DailyLesson({
     setCorrectCount(0);
 
     try {
-      const response = await fetch("/api/generate-lesson", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          day: module.day,
-          title: module.title,
-          category: module.category,
-          description: module.description,
-          keySections: module.keySections,
-          outline: module.outline,
-          userProfession: userProfession
-        })
-      });
+      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+      const prompt = `You are the Chief AI Corporate Governance Trainer for the IICA Independent Directors Databank exam preparation course.
+Generate an elite, executive-level study lesson for:
+Day ${module.day}: ${module.title}
+Category: ${module.category}
+Key Legal Sections: ${module.keySections ? module.keySections.join(", ") : "Companies Act 2013 guidelines"}
+Target Audience: Senior CXO / Board Candidate with background in: ${userProfession || "General Management"}.
+Outline: ${module.outline ? module.outline.map((o: string) => `- ${o}`).join("\n") : "General concepts of " + module.title}
+
+Return ONLY a valid JSON object with these exact keys:
+{
+  "executiveSummary": "2-3 paragraph executive summary",
+  "regulatoryDeepDive": "detailed legal analysis in markdown",
+  "boardroomPracticalInsights": "practical advice for boardrooms",
+  "caseStudy": { "title": "...", "scenario": "...", "analysis": "..." },
+  "checkpointQuestions": [{ "question": "...", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." }]
+}
+Generate exactly 3 checkpointQuestions. Return only the JSON, no markdown fences.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to communicate with AI generation engine.");
       }
 
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error("Empty response from Gemini");
+
+      const data = JSON.parse(text.replace(/```json|```/g, "").trim());
+      if (data.error) throw new Error(data.error);
 
       setLessonData(data);
     } catch (err: any) {
