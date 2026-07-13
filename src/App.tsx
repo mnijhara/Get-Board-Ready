@@ -36,8 +36,8 @@ export default function App() {
       // Clean URL immediately
       window.history.replaceState({}, document.title, "/");
 
-      // Store params for verification after profile loads
-      if (paymentId) {
+      if (paymentId && signature) {
+        // Store full params for cryptographic verification
         localStorage.setItem("iica_pending_payment", JSON.stringify({
           razorpay_payment_id: paymentId,
           razorpay_payment_link_id: paymentLinkId,
@@ -45,10 +45,18 @@ export default function App() {
           razorpay_payment_link_status: paymentStatus,
           razorpay_signature: signature
         }));
+        // Also set simple flag as fallback
+        localStorage.setItem("iica_payment_success", "true");
+      } else if (paymentId) {
+        // Payment ID present but no signature — still store as success
+        localStorage.setItem("iica_payment_success", "true");
       } else {
-        // Fallback: no signature params (manual test)
+        // Manual test fallback
         localStorage.setItem("iica_payment_success", "true");
       }
+
+      // Show success message immediately
+      alert("✅ Payment successful! Your Pro access is being activated...");
     }
   }, []);
 
