@@ -4,7 +4,7 @@ import { ShieldCheck, Sparkles, X, ExternalLink, CheckCircle } from "lucide-reac
 // =============================================
 // UPDATE THIS when Razorpay Payment Page is live
 // =============================================
-const RAZORPAY_PAYMENT_PAGE_URL = "https://rzp.io/rzp/NR7wqpC0";
+const RAZORPAY_PAYMENT_PAGE_URL = "https://rzp.io/rzp/HDsd7GF1";
 const AMOUNT = "99";
 // =============================================
 
