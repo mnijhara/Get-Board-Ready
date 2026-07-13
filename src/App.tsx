@@ -74,7 +74,7 @@ export default function App() {
         if (pendingPayment && !profile.isPremium) {
           try {
             const paymentData = JSON.parse(pendingPayment);
-            const res = await fetch("https://getboardready-payments.workers.dev/api/verify-payment", {
+            const res = await fetch("https://red-credit-6798.mnijhara.workers.dev/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
