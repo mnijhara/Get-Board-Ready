@@ -100,12 +100,13 @@ export default function App() {
             console.error("Payment verification error:", e);
           }
           localStorage.removeItem("iica_pending_payment");
-        } else if (paymentSuccess && !profile.isPremium) {
-          // Fallback for manual test mode
+        } else if (paymentSuccess) {
+          // Payment success flag set — activate premium directly
           profile.isPremium = true;
           await saveUserProfile(cachedUserId, profile);
-          await savePremiumStatus(cachedUserId, profile.email, "manual_test");
+          await savePremiumStatus(cachedUserId, profile.email, "payment_page_success");
           localStorage.removeItem("iica_payment_success");
+          localStorage.removeItem("iica_pending_payment");
         }
 
         setUserProfile(profile);
@@ -117,6 +118,10 @@ export default function App() {
   };
 
   const handleEnroll = async (name: string, email: string, profession: string) => {
+    // Check if payment was already verified before enrollment
+    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
+    const pendingPayment = localStorage.getItem("iica_pending_payment");
+
     const userId = `usr_${Date.now()}`;
     const newProfile: UserProfile = {
       id: userId,
@@ -127,12 +132,40 @@ export default function App() {
       currentDay: 1,
       completedDays: [],
       progress: {},
-      isPremium: true // All registered users are now fully paid/premium
+      isPremium: false // Premium only after payment verification
     };
 
     setUserProfile(newProfile);
     localStorage.setItem("iica_user_id", userId);
     await saveUserProfile(userId, newProfile);
+
+    // If payment was made before enrollment (redirect then enroll flow)
+    if (pendingPayment) {
+      try {
+        const paymentData = JSON.parse(pendingPayment);
+        const res = await fetch("https://red-credit-6798.mnijhara.workers.dev/api/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...paymentData, userId, userEmail: email })
+        });
+        const result = await res.json();
+        if (result.success) {
+          const upgraded = { ...newProfile, isPremium: true };
+          setUserProfile(upgraded);
+          await saveUserProfile(userId, upgraded);
+        }
+      } catch (e) {
+        console.error("Post-enroll payment verification error:", e);
+      }
+      localStorage.removeItem("iica_pending_payment");
+      localStorage.removeItem("iica_payment_success");
+    } else if (paymentSuccess) {
+      const upgraded = { ...newProfile, isPremium: true };
+      setUserProfile(upgraded);
+      await saveUserProfile(userId, upgraded);
+      await savePremiumStatus(userId, email, "payment_page_success");
+      localStorage.removeItem("iica_payment_success");
+    }
   };
 
   const handleLogout = () => {

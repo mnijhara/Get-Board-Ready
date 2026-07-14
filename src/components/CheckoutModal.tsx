@@ -17,8 +17,17 @@ interface CheckoutModalProps {
 export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail }: CheckoutModalProps) {
 
   const handlePayNow = () => {
+    // Ensure enroll data is saved before leaving (in case not already saved)
+    const existing = localStorage.getItem("iica_pending_enroll");
+    if (!existing && userEmail) {
+      // Store at least the email so we can identify the user on return
+      localStorage.setItem("iica_pending_enroll", JSON.stringify({
+        name: localStorage.getItem("iica_temp_name") || "User",
+        email: userEmail,
+        profession: localStorage.getItem("iica_temp_profession") || "Corporate Executive"
+      }));
+    }
     // Redirect to Razorpay Payment Page
-    // After payment, Razorpay redirects back to: getboardready.online?payment=success
     window.location.href = RAZORPAY_PAYMENT_PAGE_URL;
   };
 

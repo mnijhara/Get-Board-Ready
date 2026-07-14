@@ -77,8 +77,25 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
+    // Save form data so we can restore after Razorpay redirect
+    localStorage.setItem("iica_pending_enroll", JSON.stringify({ name, email, profession }));
     setShowCheckout(true);
   };
+
+  // On mount: check if user is returning from Razorpay after payment
+  // and had started enrollment — auto-complete it
+  useEffect(() => {
+    const pendingEnroll = localStorage.getItem("iica_pending_enroll");
+    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
+    const pendingPayment = localStorage.getItem("iica_pending_payment");
+
+    if (pendingEnroll && (paymentSuccess || pendingPayment)) {
+      const { name: savedName, email: savedEmail, profession: savedProfession } = JSON.parse(pendingEnroll);
+      localStorage.removeItem("iica_pending_enroll");
+      // Auto-complete enrollment — payment flag/params handled in App.tsx handleEnroll
+      onEnroll(savedName, savedEmail, savedProfession);
+    }
+  }, []);
 
   const handleUpgradeSuccessful = () => {
     setIsSubmitting(true);
