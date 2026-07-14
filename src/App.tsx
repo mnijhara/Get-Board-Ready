@@ -22,43 +22,8 @@ export default function App() {
     loadCachedSession();
   }, []);
 
-  // Detect Razorpay Payment Page redirect and verify via Cloudflare Worker
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const paymentStatus = params.get("razorpay_payment_link_status") || params.get("payment");
-    
-    if (paymentStatus === "paid" || paymentStatus === "success") {
-      const paymentId = params.get("razorpay_payment_id") || "";
-      const paymentLinkId = params.get("razorpay_payment_link_id") || "";
-      const paymentLinkRefId = params.get("razorpay_payment_link_reference_id") || "";
-      const signature = params.get("razorpay_signature") || "";
-      
-      // Clean URL immediately
-      window.history.replaceState({}, document.title, "/");
-
-      if (paymentId && signature) {
-        // Store full params for cryptographic verification
-        localStorage.setItem("iica_pending_payment", JSON.stringify({
-          razorpay_payment_id: paymentId,
-          razorpay_payment_link_id: paymentLinkId,
-          razorpay_payment_link_reference_id: paymentLinkRefId,
-          razorpay_payment_link_status: paymentStatus,
-          razorpay_signature: signature
-        }));
-        // Also set simple flag as fallback
-        localStorage.setItem("iica_payment_success", "true");
-      } else if (paymentId) {
-        // Payment ID present but no signature — still store as success
-        localStorage.setItem("iica_payment_success", "true");
-      } else {
-        // Manual test fallback
-        localStorage.setItem("iica_payment_success", "true");
-      }
-
-      // Show success message immediately
-      alert("✅ Payment successful! Your Pro access is being activated...");
-    }
-  }, []);
+  // Check Firebase premium on load (cross-device support via webhook)
+  // No localStorage tricks needed — webhook activates premium server-side
 
   const loadCachedSession = async () => {
     setIsLoading(true);
@@ -67,46 +32,12 @@ export default function App() {
     if (cachedUserId) {
       const profile = await getUserProfile(cachedUserId);
       if (profile) {
-
-        // Check Firebase for premium status (cross-device)
+        // Always check Firebase for premium — webhook may have activated it
+        // This is the ONLY source of truth — no localStorage flags needed
         const firebasePremium = await checkPremiumStatus(cachedUserId);
         if (firebasePremium && !profile.isPremium) {
           profile.isPremium = true;
           await saveUserProfile(cachedUserId, profile);
-        }
-
-        // Handle pending Razorpay payment verification
-        const pendingPayment = localStorage.getItem("iica_pending_payment");
-        const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
-
-        if (pendingPayment && !profile.isPremium) {
-          try {
-            const paymentData = JSON.parse(pendingPayment);
-            const res = await fetch("https://red-credit-6798.mnijhara.workers.dev/api/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...paymentData,
-                userId: cachedUserId,
-                userEmail: profile.email
-              })
-            });
-            const result = await res.json();
-            if (result.success) {
-              profile.isPremium = true;
-              await saveUserProfile(cachedUserId, profile);
-            }
-          } catch (e) {
-            console.error("Payment verification error:", e);
-          }
-          localStorage.removeItem("iica_pending_payment");
-        } else if (paymentSuccess) {
-          // Payment success flag set — activate premium directly
-          profile.isPremium = true;
-          await saveUserProfile(cachedUserId, profile);
-          await savePremiumStatus(cachedUserId, profile.email, "payment_page_success");
-          localStorage.removeItem("iica_payment_success");
-          localStorage.removeItem("iica_pending_payment");
         }
 
         setUserProfile(profile);
@@ -118,10 +49,6 @@ export default function App() {
   };
 
   const handleEnroll = async (name: string, email: string, profession: string) => {
-    // Check if payment was already verified before enrollment
-    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
-    const pendingPayment = localStorage.getItem("iica_pending_payment");
-
     const userId = `usr_${Date.now()}`;
     const newProfile: UserProfile = {
       id: userId,
@@ -132,40 +59,12 @@ export default function App() {
       currentDay: 1,
       completedDays: [],
       progress: {},
-      isPremium: false // Premium only after payment verification
+      isPremium: false
     };
 
     setUserProfile(newProfile);
     localStorage.setItem("iica_user_id", userId);
     await saveUserProfile(userId, newProfile);
-
-    // If payment was made before enrollment (redirect then enroll flow)
-    if (pendingPayment) {
-      try {
-        const paymentData = JSON.parse(pendingPayment);
-        const res = await fetch("https://red-credit-6798.mnijhara.workers.dev/api/verify-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...paymentData, userId, userEmail: email })
-        });
-        const result = await res.json();
-        if (result.success) {
-          const upgraded = { ...newProfile, isPremium: true };
-          setUserProfile(upgraded);
-          await saveUserProfile(userId, upgraded);
-        }
-      } catch (e) {
-        console.error("Post-enroll payment verification error:", e);
-      }
-      localStorage.removeItem("iica_pending_payment");
-      localStorage.removeItem("iica_payment_success");
-    } else if (paymentSuccess) {
-      const upgraded = { ...newProfile, isPremium: true };
-      setUserProfile(upgraded);
-      await saveUserProfile(userId, upgraded);
-      await savePremiumStatus(userId, email, "payment_page_success");
-      localStorage.removeItem("iica_payment_success");
-    }
   };
 
   const handleLogout = () => {
@@ -306,6 +205,8 @@ export default function App() {
           onClose={() => setIsCheckoutOpen(false)}
           onUpgradeSuccessful={handleUpgradeSuccessful}
           userEmail={userProfile.email}
+          userId={userProfile.id}
+          userName={userProfile.name}
         />
       )}
     </>
