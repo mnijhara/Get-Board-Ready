@@ -1,12 +1,15 @@
 // Cloudflare Worker - Get Board Ready Payment Backend
 // Proper architecture: create-order + webhook (no localStorage, no redirects)
 
-const CORS = {
-  "Access-Control-Allow-Origin": "https://getboardready.online",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json"
-};
+function getCORS(request) {
+  const origin = request?.headers?.get("Origin") || "https://getboardready.online";
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json"
+  };
+}
 
 // ── HMAC helper ────────────────────────────────────────────────
 async function hmacSHA256(message, secret) {
@@ -43,7 +46,7 @@ async function createOrder(request, env) {
   const { userId, userEmail, userName } = await request.json();
 
   if (!userId || !userEmail) {
-    return new Response(JSON.stringify({ error: "Missing userId or userEmail" }), { status: 400, headers: CORS });
+    return new Response(JSON.stringify({ error: "Missing userId or userEmail" }), { status: 400, headers: getCORS(request) });
   }
 
   const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
@@ -62,7 +65,7 @@ async function createOrder(request, env) {
 
   if (!res.ok) {
     const err = await res.json();
-    return new Response(JSON.stringify({ error: "Order creation failed", details: err }), { status: 500, headers: CORS });
+    return new Response(JSON.stringify({ error: "Order creation failed", details: err }), { status: 500, headers: getCORS(request) });
   }
 
   const order = await res.json();
@@ -83,7 +86,7 @@ async function createOrder(request, env) {
     amount: order.amount,
     currency: order.currency,
     keyId: env.RAZORPAY_KEY_ID
-  }), { status: 200, headers: CORS });
+  }), { status: 200, headers: getCORS(request) });
 }
 
 // ── 2. VERIFY PAYMENT ──────────────────────────────────────────
@@ -92,7 +95,7 @@ async function verifyPayment(request, env) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, userEmail } = await request.json();
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return new Response(JSON.stringify({ error: "Missing payment fields" }), { status: 400, headers: CORS });
+    return new Response(JSON.stringify({ error: "Missing payment fields" }), { status: 400, headers: getCORS(request) });
   }
 
   // Verify signature
@@ -100,7 +103,7 @@ async function verifyPayment(request, env) {
   const generated = await hmacSHA256(message, env.RAZORPAY_KEY_SECRET);
 
   if (generated !== razorpay_signature) {
-    return new Response(JSON.stringify({ error: "Invalid payment signature" }), { status: 400, headers: CORS });
+    return new Response(JSON.stringify({ error: "Invalid payment signature" }), { status: 400, headers: getCORS(request) });
   }
 
   // Get userId from pending_orders if not provided
@@ -116,7 +119,7 @@ async function verifyPayment(request, env) {
   }
 
   if (!resolvedUserId) {
-    return new Response(JSON.stringify({ error: "Cannot identify user for this payment" }), { status: 400, headers: CORS });
+    return new Response(JSON.stringify({ error: "Cannot identify user for this payment" }), { status: 400, headers: getCORS(request) });
   }
 
   // Activate premium in Firebase
@@ -136,7 +139,7 @@ async function verifyPayment(request, env) {
     paidAt: { stringValue: new Date().toISOString() }
   }, env);
 
-  return new Response(JSON.stringify({ success: true, payment_id: razorpay_payment_id }), { status: 200, headers: CORS });
+  return new Response(JSON.stringify({ success: true, payment_id: razorpay_payment_id }), { status: 200, headers: getCORS(request) });
 }
 
 // ── 3. WEBHOOK ─────────────────────────────────────────────────
@@ -200,7 +203,7 @@ async function checkPremium(request, env) {
 // ── ROUTER ────────────────────────────────────────────────────
 export default {
   async fetch(request, env) {
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: getCORS(request) });
 
     const { pathname } = new URL(request.url);
 
@@ -211,6 +214,6 @@ export default {
       if (pathname === "/api/webhook")         return handleWebhook(request, env);
     }
 
-    return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: CORS });
+    return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: getCORS(request) });
   }
 };
