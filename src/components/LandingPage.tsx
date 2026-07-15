@@ -30,7 +30,7 @@ import {
 import CheckoutModal from "./CheckoutModal";
 
 interface LandingPageProps {
-  onEnroll: (name: string, email: string, profession: string, userId?: string) => void;
+  onEnroll: (name: string, email: string, profession: string, userId?: string, isPremium?: boolean) => void;
 }
 
 export default function LandingPage({ onEnroll }: LandingPageProps) {
@@ -78,10 +78,9 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    // Generate userId here so we can pass it to CheckoutModal
+    // Generate userId upfront but DON'T enroll yet — wait for payment
     const userId = `usr_${Date.now()}`;
     setEnrolledUserId(userId);
-    onEnroll(name, email, profession, userId);
     setShowCheckout(true);
   };
 
@@ -102,6 +101,8 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
 
   const handleUpgradeSuccessful = () => {
     setShowCheckout(false);
+    // Payment verified — enroll user with premium access
+    onEnroll(name, email, profession, enrolledUserId, true);
   };
 
   const handleSimQuickQuestion = (question: string, answer: string) => {

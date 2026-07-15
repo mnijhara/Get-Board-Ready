@@ -48,7 +48,7 @@ export default function App() {
     setIsLoading(false);
   };
 
-  const handleEnroll = async (name: string, email: string, profession: string, presetUserId?: string) => {
+  const handleEnroll = async (name: string, email: string, profession: string, presetUserId?: string, isPremium: boolean = false) => {
     const userId = presetUserId || `usr_${Date.now()}`;
     const newProfile: UserProfile = {
       id: userId,
@@ -59,7 +59,7 @@ export default function App() {
       currentDay: 1,
       completedDays: [],
       progress: {},
-      isPremium: false
+      isPremium
     };
 
     setUserProfile(newProfile);
