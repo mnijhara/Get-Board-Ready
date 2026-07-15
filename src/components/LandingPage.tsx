@@ -77,8 +77,8 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    // Save form data so we can restore after Razorpay redirect
-    localStorage.setItem("iica_pending_enroll", JSON.stringify({ name, email, profession }));
+    // Enroll FIRST so userId exists, then show checkout
+    onEnroll(name, email, profession);
     setShowCheckout(true);
   };
 
@@ -98,12 +98,7 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   }, []);
 
   const handleUpgradeSuccessful = () => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      onEnroll(name, email, profession);
-      setIsSubmitting(false);
-      setShowCheckout(false);
-    }, 800);
+    setShowCheckout(false);
   };
 
   const handleSimQuickQuestion = (question: string, answer: string) => {
