@@ -65,7 +65,13 @@ async function createOrder(request, env) {
 
   if (!res.ok) {
     const err = await res.json();
-    return new Response(JSON.stringify({ error: "Order creation failed", details: err }), { status: 500, headers: getCORS(request) });
+    console.error("Razorpay error:", JSON.stringify(err));
+    console.error("Key ID used:", env.RAZORPAY_KEY_ID?.substring(0, 15) + "...");
+    return new Response(JSON.stringify({ 
+      error: "Order creation failed", 
+      details: err,
+      keyPrefix: env.RAZORPAY_KEY_ID?.substring(0, 10)
+    }), { status: 500, headers: getCORS(request) });
   }
 
   const order = await res.json();
