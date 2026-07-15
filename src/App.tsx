@@ -48,8 +48,8 @@ export default function App() {
     setIsLoading(false);
   };
 
-  const handleEnroll = async (name: string, email: string, profession: string) => {
-    const userId = `usr_${Date.now()}`;
+  const handleEnroll = async (name: string, email: string, profession: string, presetUserId?: string) => {
+    const userId = presetUserId || `usr_${Date.now()}`;
     const newProfile: UserProfile = {
       id: userId,
       name,

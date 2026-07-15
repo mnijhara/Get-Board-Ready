@@ -30,13 +30,14 @@ import {
 import CheckoutModal from "./CheckoutModal";
 
 interface LandingPageProps {
-  onEnroll: (name: string, email: string, profession: string) => void;
+  onEnroll: (name: string, email: string, profession: string, userId?: string) => void;
 }
 
 export default function LandingPage({ onEnroll }: LandingPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profession, setProfession] = useState("Chartered Accountant (CA) / CS");
+  const [enrolledUserId, setEnrolledUserId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [iicaTab, setIicaTab] = useState<"logistics" | "eligibility" | "resources">("logistics");
@@ -77,8 +78,10 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    // Enroll FIRST so userId exists, then show checkout
-    onEnroll(name, email, profession);
+    // Generate userId here so we can pass it to CheckoutModal
+    const userId = `usr_${Date.now()}`;
+    setEnrolledUserId(userId);
+    onEnroll(name, email, profession, userId);
     setShowCheckout(true);
   };
 
@@ -1416,7 +1419,9 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
         <CheckoutModal
           onClose={() => setShowCheckout(false)}
           onUpgradeSuccessful={handleUpgradeSuccessful}
-          userEmail={email || "candidate@getboardready.com"}
+          userEmail={email}
+          userId={enrolledUserId}
+          userName={name}
         />
       )}
     </div>
