@@ -51,7 +51,10 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail,
         body: JSON.stringify({ userId, userEmail, userName })
       });
 
-      if (!orderRes.ok) throw new Error("Could not initiate payment. Please try again.");
+      if (!orderRes.ok) {
+        const errData = await orderRes.json();
+        throw new Error(errData?.details?.error?.description || errData?.error || "Could not initiate payment. Please try again.");
+      }
       const { orderId, amount, currency, keyId } = await orderRes.json();
 
       // Step 3: Open Razorpay checkout modal (in-page, no redirect)
