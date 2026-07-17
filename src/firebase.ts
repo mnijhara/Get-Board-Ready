@@ -154,3 +154,20 @@ export async function checkPremiumStatus(userId: string): Promise<boolean> {
   }
   return false;
 }
+
+/**
+ * Look up user profile by email — for returning users logging in on new device
+ */
+export async function getUserProfileByEmail(email: string): Promise<UserProfile | null> {
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, where("email", "==", email));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs[0].data() as UserProfile;
+    }
+  } catch (error) {
+    console.error("getUserProfileByEmail error:", error);
+  }
+  return null;
+}

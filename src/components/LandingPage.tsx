@@ -78,9 +78,11 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    // Generate userId upfront but DON'T enroll yet — wait for payment
+    // Check if returning user (just email needed) OR new user needs payment
     const userId = `usr_${Date.now()}`;
     setEnrolledUserId(userId);
+    // Show checkout — onUpgradeSuccessful will enroll after payment
+    // For returning users, handleEnroll will detect them by email
     setShowCheckout(true);
   };
 
@@ -101,7 +103,7 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
 
   const handleUpgradeSuccessful = () => {
     setShowCheckout(false);
-    // Payment verified — enroll user with premium access
+    // Payment verified — enroll with isPremium: true
     onEnroll(name, email, profession, enrolledUserId, true);
   };
 
