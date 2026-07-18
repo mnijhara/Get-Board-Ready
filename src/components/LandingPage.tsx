@@ -27,19 +27,16 @@ import {
   ExternalLink,
   ShieldCheck
 } from "lucide-react";
-import CheckoutModal from "./CheckoutModal";
 
 interface LandingPageProps {
-  onEnroll: (name: string, email: string, profession: string, userId?: string, isPremium?: boolean) => void;
+  onEnroll: () => void;
+  onLogin: () => void;
 }
 
-export default function LandingPage({ onEnroll }: LandingPageProps) {
+export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profession, setProfession] = useState("Chartered Accountant (CA) / CS");
-  const [enrolledUserId, setEnrolledUserId] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
   const [iicaTab, setIicaTab] = useState<"logistics" | "eligibility" | "resources">("logistics");
   
   // Ex-Google executive premium value ROI tool states
@@ -77,35 +74,12 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
-    // Check if returning user (just email needed) OR new user needs payment
-    const userId = `usr_${Date.now()}`;
-    setEnrolledUserId(userId);
-    // Show checkout — onUpgradeSuccessful will enroll after payment
-    // For returning users, handleEnroll will detect them by email
-    setShowCheckout(true);
+    onEnroll();
   };
 
-  // On mount: check if user is returning from Razorpay after payment
-  // and had started enrollment — auto-complete it
-  useEffect(() => {
-    const pendingEnroll = localStorage.getItem("iica_pending_enroll");
-    const paymentSuccess = localStorage.getItem("iica_payment_success") === "true";
-    const pendingPayment = localStorage.getItem("iica_pending_payment");
 
-    if (pendingEnroll && (paymentSuccess || pendingPayment)) {
-      const { name: savedName, email: savedEmail, profession: savedProfession } = JSON.parse(pendingEnroll);
-      localStorage.removeItem("iica_pending_enroll");
-      // Auto-complete enrollment — payment flag/params handled in App.tsx handleEnroll
-      onEnroll(savedName, savedEmail, savedProfession);
-    }
-  }, []);
 
-  const handleUpgradeSuccessful = () => {
-    setShowCheckout(false);
-    // Payment verified — enroll with isPremium: true
-    onEnroll(name, email, profession, enrolledUserId, true);
-  };
+
 
   const handleSimQuickQuestion = (question: string, answer: string) => {
     if (simIsTyping) return;
@@ -175,12 +149,20 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
             <span className="text-xs font-mono text-slate-500 hidden sm:inline-block">
               AUTONOMOUS EXECUTIVE ENGINE
             </span>
-            <a 
-              href="#enroll" 
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              Enroll Now
-            </a>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={onLogin}
+                className="text-slate-600 hover:text-slate-900 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+              >
+                Log In
+              </button>
+              <button
+                onClick={onEnroll}
+                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                Enroll Now
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -264,69 +246,25 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
                   Enter your background to customize the training curriculum. The Gemini model will restructure the 30-day syllabus lessons to suit your professional experience.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-                  <div>
-                    <label className="block text-xs font-mono text-slate-400 mb-1">Full Name</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="e.g. Anand Ramakrishnan"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-mono text-slate-400 mb-1">Email Address</label>
-                    <input 
-                      type="email" 
-                      required
-                      placeholder="e.g. anand@outlook.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-mono text-slate-400 mb-1">Professional Background</label>
-                    <select 
-                      value={profession}
-                      onChange={(e) => setProfession(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    >
-                      <option value="Chartered Accountant (CA) / CS">Chartered Accountant (CA) / CS</option>
-                      <option value="Senior Advocate / Legal Counsel">Senior Advocate / Legal Counsel</option>
-                      <option value="CEO / Managing Director / CXO">CEO / Managing Director / CXO</option>
-                      <option value="Technology Executive / GM">Technology Executive / GM</option>
-                      <option value="Retired Civil Servant / Defense Officer">Retired Civil Servant / Defense Officer</option>
-                      <option value="Financial Officer (CFO) / Auditor">Financial Officer (CFO) / Auditor</option>
-                      <option value="Management Consultant / Advisor">Management Consultant / Advisor</option>
-                      <option value="Academician / Professor / Researcher">Academician / Professor / Researcher</option>
-                      <option value="Existing Independent Director">Existing Independent Director</option>
-                      <option value="HR Leader / Talent Executive">HR Leader / Talent Executive</option>
-                      <option value="Entrepreneur / Business Owner">Entrepreneur / Business Owner</option>
-                      <option value="Other Professional / Aspiring Director">Other Professional / Aspiring Director (Everyone Allowed)</option>
-                    </select>
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 text-white py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center space-x-2 mt-2 shadow-lg hover:shadow-indigo-500/25"
+                <div className="space-y-3 pt-1">
+                  <button
+                    onClick={onEnroll}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center space-x-2 shadow-lg hover:shadow-indigo-500/25"
                   >
-                    {isSubmitting ? (
-                      <span>Tailoring Curriculum...</span>
-                    ) : (
-                      <>
-                        <span>Get Started for ₹99 Only</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </>
-                    )}
+                    <span>Get Started for ₹99 Only</span>
+                    <ChevronRight className="h-4 w-4" />
                   </button>
-                </form>
+
+                  <button
+                    onClick={onLogin}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center space-x-2 border border-slate-700"
+                  >
+                    <span>Already have an account? Log In</span>
+                  </button>
+                </div>
 
                 <div className="pt-2 text-[10px] text-slate-500 text-center">
-                  By clicking, you gain immediate access to our persistent interactive preview.
+                  Lifetime access. Works on all devices. Secure cloud sync.
                 </div>
               </div>
             </div>
@@ -1418,15 +1356,7 @@ export default function LandingPage({ onEnroll }: LandingPageProps) {
         </div>
       </footer>
 
-      {showCheckout && (
-        <CheckoutModal
-          onClose={() => setShowCheckout(false)}
-          onUpgradeSuccessful={handleUpgradeSuccessful}
-          userEmail={email}
-          userId={enrolledUserId}
-          userName={name}
-        />
-      )}
+
     </div>
   );
 }

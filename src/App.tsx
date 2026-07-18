@@ -13,6 +13,7 @@ import AITutor from "./components/AITutor";
 import MockExam from "./components/MockExam";
 import Flashcards from "./components/Flashcards";
 import CheckoutModal from "./components/CheckoutModal";
+import AuthModal from "./components/AuthModal";
 
 export default function App() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -21,6 +22,13 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<"login" | "signup">("signup");
+  
+  // Temp signup data held between AuthModal → CheckoutModal
+  const [pendingSignup, setPendingSignup] = useState<{
+    name: string; email: string; profession: string; userId: string;
+  } | null>(null);
 
   useEffect(() => {
     loadSession();
@@ -29,11 +37,10 @@ export default function App() {
   const loadSession = async () => {
     setIsLoading(true);
     const cachedUserId = localStorage.getItem("iica_user_id");
-
     if (cachedUserId) {
       const profile = await getUserProfile(cachedUserId);
       if (profile) {
-        // Always sync premium from Firebase — webhook may have activated it
+        // Always sync premium from Firebase (webhook may have activated it)
         const firebasePremium = await checkPremiumStatus(cachedUserId);
         if (firebasePremium && !profile.isPremium) {
           profile.isPremium = true;
@@ -43,63 +50,86 @@ export default function App() {
         const history = await getMockAttempts(cachedUserId);
         setMockAttempts(history);
       } else {
-        // Cached ID but no profile — clear stale cache
         localStorage.removeItem("iica_user_id");
       }
     }
     setIsLoading(false);
   };
 
-  // Called when user submits enrollment form
-  // Checks if email already exists in Firebase (returning user)
-  const handleEnroll = async (name: string, email: string, profession: string, presetUserId?: string, isPremiumOnEnroll: boolean = false) => {
-    // Check if returning user exists by email
-    const existingProfile = await getUserProfileByEmail(email);
+  // Called from LandingPage Enroll button → show AuthModal signup tab
+  const handleEnrollClick = () => {
+    setAuthModalTab("signup");
+    setShowAuthModal(true);
+  };
 
-    if (existingProfile) {
-      // Returning user — restore their session
-      const firebasePremium = await checkPremiumStatus(existingProfile.id);
-      if (firebasePremium) existingProfile.isPremium = true;
-      setUserProfile(existingProfile);
-      localStorage.setItem("iica_user_id", existingProfile.id);
-      const history = await getMockAttempts(existingProfile.id);
+  // Called from LandingPage Login button → show AuthModal login tab
+  const handleLoginClick = () => {
+    setAuthModalTab("login");
+    setShowAuthModal(true);
+  };
+
+  // Called from AuthModal login tab — email found in Firebase
+  const handleLoginSuccess = async (email: string) => {
+    setIsLoading(true);
+    setShowAuthModal(false);
+
+    const profile = await getUserProfileByEmail(email);
+    if (profile) {
+      const firebasePremium = await checkPremiumStatus(profile.id);
+      if (firebasePremium) profile.isPremium = true;
+      setUserProfile(profile);
+      localStorage.setItem("iica_user_id", profile.id);
+      const history = await getMockAttempts(profile.id);
       setMockAttempts(history);
-      return;
     }
+    setIsLoading(false);
+  };
 
-    // New user
-    const userId = presetUserId || `usr_${Date.now()}`;
-    const newProfile: UserProfile = {
-      id: userId,
-      name,
-      email,
-      profession,
-      enrolledAt: new Date().toISOString(),
-      currentDay: 1,
-      completedDays: [],
-      progress: {},
-      isPremium: isPremiumOnEnroll
-    };
+  // Called from AuthModal signup tab — show CheckoutModal
+  const handleSignupProceed = (name: string, email: string, profession: string, userId: string) => {
+    setShowAuthModal(false);
+    setPendingSignup({ name, email, profession, userId });
+    setIsCheckoutOpen(true);
+  };
 
-    setUserProfile(newProfile);
-    localStorage.setItem("iica_user_id", userId);
-    await saveUserProfile(userId, newProfile);
+  // Called after Razorpay payment verified
+  const handleUpgradeSuccessful = async () => {
+    if (pendingSignup) {
+      // New user completing signup after payment
+      const { name, email, profession, userId } = pendingSignup;
+      const newProfile: UserProfile = {
+        id: userId, name, email, profession,
+        enrolledAt: new Date().toISOString(),
+        currentDay: 1, completedDays: [], progress: {},
+        isPremium: true
+      };
+      setUserProfile(newProfile);
+      localStorage.setItem("iica_user_id", userId);
+      await saveUserProfile(userId, newProfile);
+      await savePremiumStatus(userId, email, "payment_verified");
+      setPendingSignup(null);
+    } else if (userProfile) {
+      // Existing user upgrading from dashboard
+      const updatedProfile: UserProfile = { ...userProfile, isPremium: true };
+      setUserProfile(updatedProfile);
+      await saveUserProfile(userProfile.id, updatedProfile);
+      await savePremiumStatus(userProfile.id, userProfile.email, "payment_verified");
+    }
+    setIsCheckoutOpen(false);
   };
 
   const handleLogout = () => {
-    if (window.confirm("Do you want to log out? Your progress is safely stored in the cloud.")) {
+    if (window.confirm("Log out? Your progress is safely stored in the cloud.")) {
       localStorage.removeItem("iica_user_id");
       setUserProfile(null);
       setMockAttempts([]);
       setSelectedDay(null);
       setActiveTab("syllabus");
+      setPendingSignup(null);
     }
   };
 
-  const handleSelectDay = (day: number) => {
-    setSelectedDay(day);
-    setActiveTab("syllabus");
-  };
+  const handleSelectDay = (day: number) => { setSelectedDay(day); setActiveTab("syllabus"); };
 
   const handleCompleteDay = async (day: number, score: number, notes: string) => {
     if (!userProfile) return;
@@ -118,17 +148,9 @@ export default function App() {
     };
 
     let nextCurrentDay = userProfile.currentDay;
-    if (isPassing && day === userProfile.currentDay) {
-      nextCurrentDay = Math.min(30, day + 1);
-    }
+    if (isPassing && day === userProfile.currentDay) nextCurrentDay = Math.min(30, day + 1);
 
-    const updatedProfile: UserProfile = {
-      ...userProfile,
-      completedDays: currentCompleted,
-      progress: updatedProgress,
-      currentDay: nextCurrentDay
-    };
-
+    const updatedProfile = { ...userProfile, completedDays: currentCompleted, progress: updatedProgress, currentDay: nextCurrentDay };
     setUserProfile(updatedProfile);
     await saveUserProfile(userProfile.id, updatedProfile);
   };
@@ -137,15 +159,6 @@ export default function App() {
     if (!userProfile) return;
     setMockAttempts(prev => [attempt, ...prev]);
     await saveMockAttempt(userProfile.id, attempt);
-  };
-
-  // Called after Razorpay payment verified by Cloudflare Worker
-  const handleUpgradeSuccessful = async () => {
-    if (!userProfile) return;
-    const updatedProfile: UserProfile = { ...userProfile, isPremium: true };
-    setUserProfile(updatedProfile);
-    await saveUserProfile(userProfile.id, updatedProfile);
-    await savePremiumStatus(userProfile.id, userProfile.email, "payment_verified");
   };
 
   if (isLoading) {
@@ -158,7 +171,31 @@ export default function App() {
   }
 
   if (!userProfile) {
-    return <LandingPage onEnroll={handleEnroll} />;
+    return (
+      <>
+        <LandingPage 
+          onEnroll={handleEnrollClick}
+          onLogin={handleLoginClick}
+        />
+        {showAuthModal && (
+          <AuthModal
+            onClose={() => setShowAuthModal(false)}
+            onLoginSuccess={handleLoginSuccess}
+            onSignupProceed={handleSignupProceed}
+            defaultTab={authModalTab}
+          />
+        )}
+        {isCheckoutOpen && pendingSignup && (
+          <CheckoutModal
+            onClose={() => { setIsCheckoutOpen(false); setPendingSignup(null); }}
+            onUpgradeSuccessful={handleUpgradeSuccessful}
+            userEmail={pendingSignup.email}
+            userId={pendingSignup.userId}
+            userName={pendingSignup.name}
+          />
+        )}
+      </>
+    );
   }
 
   return (
@@ -167,7 +204,7 @@ export default function App() {
         profile={userProfile}
         attempts={mockAttempts}
         onSelectDay={handleSelectDay}
-        onNavigate={(tab) => { setSelectedDay(null); setActiveTab(tab); }}
+        onNavigate={(tab) => { setSelectedDay(null); setActiveTab(tab as any); }}
         activeTab={activeTab}
         onLogout={handleLogout}
         onTriggerUpgrade={() => setIsCheckoutOpen(true)}
@@ -181,7 +218,6 @@ export default function App() {
             existingProgress={userProfile.progress[selectedDay]}
           />
         )}
-
         {selectedDay === null && activeTab === "tutor" && (
           <AITutor
             userProfession={userProfile.profession || "Corporate Executive"}
@@ -189,7 +225,6 @@ export default function App() {
             onTriggerUpgrade={() => setIsCheckoutOpen(true)}
           />
         )}
-
         {selectedDay === null && activeTab === "mock" && (
           <MockExam
             userId={userProfile.id}
@@ -200,10 +235,7 @@ export default function App() {
             onTriggerUpgrade={() => setIsCheckoutOpen(true)}
           />
         )}
-
-        {selectedDay === null && activeTab === "flashcards" && (
-          <Flashcards />
-        )}
+        {selectedDay === null && activeTab === "flashcards" && <Flashcards />}
       </Dashboard>
 
       {isCheckoutOpen && (
