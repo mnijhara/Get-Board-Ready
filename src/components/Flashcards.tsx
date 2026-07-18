@@ -11,8 +11,16 @@ import {
   Sparkles 
 } from "lucide-react";
 
-export default function Flashcards() {
-  const [deck, setDeck] = useState<Flashcard[]>(sampleFlashcards);
+interface FlashcardsProps {
+  isPremium?: boolean;
+  onTriggerUpgrade?: () => void;
+}
+
+export default function Flashcards({ isPremium = false, onTriggerUpgrade }: FlashcardsProps) {
+  const FREE_LIMIT = 10;
+  const fullDeck = sampleFlashcards;
+  const visibleDeck = isPremium ? fullDeck : fullDeck.slice(0, FREE_LIMIT);
+  const [deck, setDeck] = useState<Flashcard[]>(visibleDeck);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
   const [masteredIds, setMasteredIds] = useState<string[]>([]);

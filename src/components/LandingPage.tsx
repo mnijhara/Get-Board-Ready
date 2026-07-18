@@ -34,9 +34,6 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [profession, setProfession] = useState("Chartered Accountant (CA) / CS");
   const [iicaTab, setIicaTab] = useState<"logistics" | "eligibility" | "resources">("logistics");
   
   // Ex-Google executive premium value ROI tool states
@@ -72,10 +69,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [simChatMessages, simIsTyping]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onEnroll();
-  };
+
 
 
 

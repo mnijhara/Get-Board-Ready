@@ -105,7 +105,7 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail,
       });
 
     } catch (err: any) {
-      if (err.message !== "Payment cancelled") {
+      if (err.message && err.message !== "Payment cancelled" && err.message !== "popup_closed_by_user") {
         setError(err.message || "Something went wrong. Please try again.");
       }
       setStatus("idle");

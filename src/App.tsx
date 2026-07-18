@@ -235,7 +235,7 @@ export default function App() {
             onTriggerUpgrade={() => setIsCheckoutOpen(true)}
           />
         )}
-        {selectedDay === null && activeTab === "flashcards" && <Flashcards />}
+        {selectedDay === null && activeTab === "flashcards" && <Flashcards isPremium={userProfile.isPremium || false} onTriggerUpgrade={() => setIsCheckoutOpen(true)} />}
       </Dashboard>
 
       {isCheckoutOpen && (
