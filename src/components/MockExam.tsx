@@ -625,7 +625,10 @@ Return only the JSON, no markdown fences.`;
                   >
                     <div className="flex items-start justify-between space-x-2">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase">Question {idx + 1} ({q.category})</span>
+                        <span className="text-[10px] font-mono text-slate-400 uppercase flex items-center space-x-1">
+                        <span>Question {idx + 1} ({q.category})</span>
+                        {(q as any).isVerified && <span className="bg-indigo-100 text-indigo-600 text-[9px] px-1.5 py-0.5 rounded font-bold ml-1">✓ VERIFIED</span>}
+                      </span>
                         <h4 className="font-bold text-slate-900 text-xs sm:text-sm leading-normal">{q.question}</h4>
                       </div>
                       <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded shrink-0 ${
@@ -652,7 +655,18 @@ Return only the JSON, no markdown fences.`;
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-slate-150">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-150">
+            <button
+              onClick={() => {
+                const pct = Math.round((completedAttempt.score / completedAttempt.totalQuestions) * 100);
+                const msg = encodeURIComponent(`📝 IICA Mock Exam Result on Get Board Ready:\n\nScore: ${completedAttempt.score}/${completedAttempt.totalQuestions} (${pct}%)\nStatus: ${completedAttempt.passed ? "✅ PASSED" : "❌ Need more prep"}\nTime: ${formatTime(completedAttempt.timeTaken)}\n\nPrepare for your IICA exam → https://getboardready.online`);
+                window.open(`https://wa.me/?text=${msg}`, "_blank");
+              }}
+              className="bg-green-500 hover:bg-green-400 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors flex items-center space-x-1"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              <span>Share Result</span>
+            </button>
             <button
               onClick={() => setGameState("setup")}
               className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2 rounded-lg transition-colors flex items-center space-x-1"

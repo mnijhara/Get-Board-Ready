@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Award, Download, X } from "lucide-react";
+import { Award, Download, Share2, X } from "lucide-react";
 import { UserProfile } from "../types";
 
 interface CertificateProps {
@@ -144,6 +144,16 @@ export default function Certificate({ profile, onClose }: CertificateProps) {
             <span>Download Certificate (PDF)</span>
           </button>
           <p className="text-center text-[10px] text-slate-400 mt-2">Opens print dialog — save as PDF</p>
+          <button
+            onClick={() => {
+              const msg = encodeURIComponent(`🏛️ I just completed the 30-Day IICA Independent Director Exam Prep Programme on Get Board Ready!\n\n✅ ${completedCount}/30 Days Completed\n📊 Avg Score: ${Math.round(avgScore)}%\n🔥 Best Streak: ${profile.longestStreak || 0} Days\n\nPrepare for your IICA exam too → https://getboardready.online`);
+              window.open(`https://wa.me/?text=${msg}`, "_blank");
+            }}
+            className="w-full mt-2 bg-green-500 hover:bg-green-400 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center space-x-2 transition-all"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>Share on WhatsApp</span>
+          </button>
         </div>
       </div>
     </div>

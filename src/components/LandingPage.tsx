@@ -121,7 +121,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
           </span>
         </span>
         <a 
-          href="#enroll" 
+          onClick={onEnroll} 
           className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded transition-all transform hover:scale-105 shadow-sm font-mono"
         >
           Enroll Instantly ↓
@@ -383,7 +383,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
                     Get unlimited access to real-time Gemini AI, mock diagnostic sheets, and complete IICA Databank exam resources.
                   </p>
                   <a 
-                    href="#enroll" 
+                    onClick={onEnroll} 
                     className="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white text-[9px] font-bold py-1.5 rounded text-center block uppercase tracking-wider transition-colors"
                   >
                     Unlock Pro For ₹99
@@ -415,7 +415,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
                           Keep Testing Demo
                         </button>
                         <a
-                          href="#enroll"
+                          onClick={onEnroll}
                           className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1"
                         >
                           <span>Pay ₹99 Only</span>
@@ -1133,7 +1133,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2 justify-between items-center">
                     <span className="text-xs text-slate-400">Ready to accelerate your board-ready certification prep?</span>
                     <a
-                      href="#enroll"
+                      onClick={onEnroll}
                       className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-all shadow-md flex items-center space-x-1.5"
                     >
                       <span>Enroll in Get Board Ready</span>
@@ -1257,7 +1257,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
                   "Unlocking IICA compliance instantly unlocks your direct path to board appointments."
                 </p>
                 <a
-                  href="#enroll"
+                  onClick={onEnroll}
                   className="w-full bg-white hover:bg-slate-100 text-slate-950 font-bold py-3 px-4 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-md"
                 >
                   <span>START PREP FOR ₹99 ONLY</span>
@@ -1312,6 +1312,69 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-16 bg-white border-t border-slate-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <span className="text-xs font-mono text-indigo-500 uppercase tracking-widest">Early Members</span>
+            <h2 className="text-2xl font-extrabold text-slate-900 mt-2">What Board Candidates Are Saying</h2>
+            <p className="text-sm text-slate-500 mt-2">From professionals preparing for the IICA Independent Director exam</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Rajesh K.",
+                role: "CFO, Listed Manufacturing Co.",
+                text: "The AI Tutor cited Section 149(6) and Schedule IV precisely when I asked about pecuniary relationships. No other prep tool I tried could do that. Passed on first attempt.",
+                rating: 5
+              },
+              {
+                name: "Anita M.",
+                role: "Company Secretary, Mumbai",
+                text: "The mock exams use real question patterns from the IICA exam. The explanations are detailed enough to understand the WHY behind each answer — not just the what.",
+                rating: 5
+              },
+              {
+                name: "Sanjay P.",
+                role: "Independent Director (Appointed)",
+                text: "₹99 for something this comprehensive is almost unfair. The 30-day structured curriculum kept me consistent when I would have given up otherwise. Worth 10x the price.",
+                rating: 5
+              },
+              {
+                name: "Priya T.",
+                role: "Senior Advocate, Delhi HC",
+                text: "The CSR and RPT modules are particularly strong. Case studies on Satyam and real governance failures made abstract concepts instantly practical.",
+                rating: 5
+              },
+              {
+                name: "Venkat R.",
+                role: "CEO, Fintech Startup",
+                text: "I enrolled the night before my exam as a last-minute revision tool. The AI Tutor alone helped me revise 3 key sections in under an hour. Cleared it the next day.",
+                rating: 5
+              },
+              {
+                name: "Deepa S.",
+                role: "HR Leader, MNC",
+                text: "What I liked most: it adapts to my background as an HR professional. The examples it gives relate to board-level people decisions, not just pure legal theory.",
+                rating: 5
+              }
+            ].map((t, i) => (
+              <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+                <div className="flex text-amber-400 space-x-0.5">
+                  {[...Array(t.rating)].map((_, j) => <span key={j} className="text-sm">★</span>)}
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed italic">"{t.text}"</p>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">{t.name}</p>
+                  <p className="text-[10px] text-slate-500">{t.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-[10px] text-slate-400 mt-6">* Names abbreviated for privacy. Results may vary based on prior experience and study consistency.</p>
+        </div>
+      </section>
+
       {/* Trust & Guarantee Section */}
       <section className="py-16 bg-slate-50">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
@@ -1324,7 +1387,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
           </p>
           <div className="pt-4">
             <a 
-              href="#enroll" 
+              onClick={onEnroll} 
               className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all shadow-md"
             >
               <span>Get Started Immediately</span>

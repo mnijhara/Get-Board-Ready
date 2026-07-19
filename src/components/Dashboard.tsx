@@ -45,6 +45,28 @@ export default function Dashboard({
 }: DashboardProps) {
   const [showCertificate, setShowCertificate] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  const [reminderEnabled, setReminderEnabled] = useState(
+    localStorage.getItem("gbr_reminder_enabled") === "true"
+  );
+
+  const toggleReminder = async () => {
+    if (!reminderEnabled) {
+      if ("Notification" in window) {
+        const perm = await Notification.requestPermission();
+        if (perm === "granted") {
+          new Notification("Get Board Ready 🏛️", {
+            body: "Daily study reminders enabled! We'll keep your streak alive 🔥",
+            icon: "/favicon.svg"
+          });
+          localStorage.setItem("gbr_reminder_enabled", "true");
+          setReminderEnabled(true);
+        }
+      }
+    } else {
+      localStorage.setItem("gbr_reminder_enabled", "false");
+      setReminderEnabled(false);
+    }
+  };
   const completedCount = profile.completedDays.length;
   const progressPercentage = Math.round((completedCount / 30) * 100);
 

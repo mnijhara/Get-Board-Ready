@@ -3,11 +3,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Message } from "../types";
 import { 
   Bot, 
+  Bookmark,
+  BookmarkCheck,
   Cpu, 
   HelpCircle, 
   Loader2, 
   MessageSquare, 
   Send, 
+  Share2,
   Sparkles, 
   Trash2, 
   UserCheck,
@@ -41,6 +44,22 @@ I am configured with full-fidelity context of your background as a **${userProfe
   ]);
   const [inputText, setInputText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("tutor_bookmarks") || "[]"); } catch { return []; }
+  });
+
+  const toggleBookmark = (msgId: string) => {
+    setBookmarkedIds(prev => {
+      const next = prev.includes(msgId) ? prev.filter(id => id !== msgId) : [...prev, msgId];
+      localStorage.setItem("tutor_bookmarks", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const shareToWhatsApp = (text: string) => {
+    const msg = encodeURIComponent(`📚 IICA Exam Insight from Get Board Ready:\n\n${text.substring(0, 500)}...\n\nLearn more: https://getboardready.online`);
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
+  };
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -228,9 +247,32 @@ I am configured with full-fidelity context of your background as a **${userProfe
                       {msg.text}
                     </div>
                   </div>
-                  <span className={`block text-[9px] font-mono text-slate-400 ${isAI ? "" : "text-right"}`}>
-                    {msg.timestamp}
-                  </span>
+                  <div className={`flex items-center space-x-2 ${isAI ? "" : "justify-end"}`}>
+                    <span className="block text-[9px] font-mono text-slate-400">
+                      {msg.timestamp}
+                    </span>
+                    {isAI && msg.id !== "init" && (
+                      <>
+                        <button
+                          onClick={() => toggleBookmark(msg.id)}
+                          className="text-slate-300 hover:text-indigo-500 transition-colors"
+                          title={bookmarkedIds.includes(msg.id) ? "Remove bookmark" : "Bookmark this answer"}
+                        >
+                          {bookmarkedIds.includes(msg.id)
+                            ? <BookmarkCheck className="h-3 w-3 text-indigo-500" />
+                            : <Bookmark className="h-3 w-3" />
+                          }
+                        </button>
+                        <button
+                          onClick={() => shareToWhatsApp(msg.text)}
+                          className="text-slate-300 hover:text-green-500 transition-colors"
+                          title="Share on WhatsApp"
+                        >
+                          <Share2 className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
