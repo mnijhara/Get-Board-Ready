@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'worker/**'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
   deploy-worker:
@@ -12,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy Worker
+      - name: Deploy Worker + Secrets
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -24,6 +25,7 @@ jobs:
             FIREBASE_PROJECT_ID
             FIREBASE_DATABASE_ID
             FIREBASE_API_KEY
+            GEMINI_API_KEY
         env:
           RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
           RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
@@ -31,3 +33,4 @@ jobs:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_DATABASE_ID: ${{ secrets.FIREBASE_DATABASE_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
