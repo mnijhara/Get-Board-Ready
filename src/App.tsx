@@ -150,7 +150,31 @@ export default function App() {
     let nextCurrentDay = userProfile.currentDay;
     if (isPassing && day === userProfile.currentDay) nextCurrentDay = Math.min(30, day + 1);
 
-    const updatedProfile = { ...userProfile, completedDays: currentCompleted, progress: updatedProgress, currentDay: nextCurrentDay };
+    // Streak calculation
+    const today = new Date().toDateString();
+    const lastStudy = userProfile.lastStudyDate;
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    let newStreak = userProfile.streak || 0;
+    if (isPassing) {
+      if (lastStudy === today) {
+        // Already studied today, keep streak
+      } else if (lastStudy === yesterday) {
+        newStreak += 1;
+      } else {
+        newStreak = 1; // Reset streak
+      }
+    }
+    const longestStreak = Math.max(newStreak, userProfile.longestStreak || 0);
+
+    const updatedProfile = {
+      ...userProfile,
+      completedDays: currentCompleted,
+      progress: updatedProgress,
+      currentDay: nextCurrentDay,
+      streak: newStreak,
+      lastStudyDate: isPassing ? today : userProfile.lastStudyDate,
+      longestStreak
+    };
     setUserProfile(updatedProfile);
     await saveUserProfile(userProfile.id, updatedProfile);
   };
@@ -213,6 +237,8 @@ export default function App() {
           <DailyLesson
             module={syllabus.find(m => m.day === selectedDay) || syllabus[0]}
             userProfession={userProfile.profession || "Corporate Executive"}
+            userId={userProfile.id}
+            isPremium={userProfile.isPremium || false}
             onBack={() => setSelectedDay(null)}
             onCompleteDay={handleCompleteDay}
             existingProgress={userProfile.progress[selectedDay]}
@@ -222,6 +248,7 @@ export default function App() {
           <AITutor
             userProfession={userProfile.profession || "Corporate Executive"}
             isPremium={userProfile.isPremium || false}
+            userId={userProfile.id}
             onTriggerUpgrade={() => setIsCheckoutOpen(true)}
           />
         )}

@@ -1,0 +1,18 @@
+{
+  "name": "Get Board Ready",
+  "short_name": "BoardReady",
+  "description": "IICA Independent Director Exam Prep — AI-Powered",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

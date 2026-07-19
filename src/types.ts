@@ -9,6 +9,9 @@ export interface UserProfile {
   progress: { [day: number]: DayProgress };
   isPremium?: boolean;
   tutorMessagesCount?: number;
+  streak?: number;
+  lastStudyDate?: string;
+  longestStreak?: number;
 }
 
 export interface DayProgress {

@@ -1,3 +1,4 @@
+import { callAI, extractText } from "../lib/ai";
 import React, { useState, useEffect } from "react";
 import { MockAttempt, QuizQuestion } from "../types";
 import { 
@@ -77,7 +78,6 @@ export default function MockExam({ userId, userProfession, onSaveAttempt, attemp
     setCurrentIndex(0);
 
     try {
-      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
       const prompt = `You are the IICA Exam Blueprint Generator. Generate exactly ${questionCount} Multiple Choice Questions for the Independent Directors Databank Online Proficiency Self-Assessment Test.
 Categories: ${selectedCats.join(", ")}.
 Make 60% situational/case-study type and 40% threshold/memorization type.
@@ -87,29 +87,28 @@ Return ONLY a valid JSON object:
 { "questions": [{ "question": "...", "category": "Companies Act", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." }] }
 Return only the JSON, no markdown fences.`;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
+      const result = await callAI({
+        type: "exam",
+        userId,
+        isPremium,
+        payload: {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
         }
-      );
+      });
 
-      if (!response.ok) {
-        throw new Error("Unable to establish communication with the exam server.");
+      if (result.limitReached) {
+        if (!isPremium) onTriggerUpgrade();
+        throw new Error(result.error || "Daily exam limit reached.");
       }
+      if (result.error) throw new Error(result.error);
 
-      const result = await response.json();
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Empty response from Gemini");
+      const text = extractText(result);
+      if (!text) throw new Error("Empty response from AI engine.");
 
       const data = JSON.parse(text.replace(/```json|```/g, "").trim());
       if (!data.questions || data.questions.length === 0) {
-        throw new Error("Exam paper returned with blank questions. Let's try again.");
+        throw new Error("Exam paper returned with blank questions. Try again.");
       }
 
       setQuestions(data.questions);

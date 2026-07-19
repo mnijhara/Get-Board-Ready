@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Certificate from "./Certificate";
+import SupportPage from "./SupportPage";
 import { UserProfile, StudyModule, MockAttempt } from "../types";
 import { syllabus } from "../data/syllabus";
 import { 
@@ -41,6 +43,8 @@ export default function Dashboard({
   onTriggerUpgrade,
   children 
 }: DashboardProps) {
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
   const completedCount = profile.completedDays.length;
   const progressPercentage = Math.round((completedCount / 30) * 100);
 
@@ -64,6 +68,7 @@ export default function Dashboard({
   const categories = Array.from(new Set(syllabus.map(m => m.category)));
 
   return (
+    <>
     <div className="bg-slate-50 min-h-screen font-sans flex flex-col text-slate-900">
       {/* Top Banner / Navigation */}
       <header className="bg-slate-900 text-white border-b border-slate-800">
@@ -150,7 +155,7 @@ export default function Dashboard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 text-center">
+              <div className="grid grid-cols-3 gap-2 pt-2 text-center">
                 <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
                   <span className="block text-[10px] font-mono text-slate-400 uppercase">Avg Quiz</span>
                   <span className="block text-base font-bold text-slate-900">{avgQuizScore}%</span>
@@ -158,6 +163,10 @@ export default function Dashboard({
                 <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
                   <span className="block text-[10px] font-mono text-slate-400 uppercase">High Mock</span>
                   <span className="block text-base font-bold text-slate-900">{highMockScore > 0 ? `${highMockScore}%` : "—"}</span>
+                </div>
+                <div className="bg-orange-50 p-2 rounded-lg border border-orange-100">
+                  <span className="block text-[10px] font-mono text-orange-500 uppercase">🔥 Streak</span>
+                  <span className="block text-base font-bold text-orange-600">{profile.streak || 0}d</span>
                 </div>
               </div>
             </div>
@@ -402,5 +411,14 @@ export default function Dashboard({
         </main>
       </div>
     </div>
+    {showCertificate && (
+      <Certificate profile={profile} onClose={() => setShowCertificate(false)} />
+    )}
+    {showSupport && (
+      <div className="fixed inset-0 z-[100] bg-white overflow-y-auto">
+        <SupportPage onBack={() => setShowSupport(false)} />
+      </div>
+    )}
+    </>
   );
 }

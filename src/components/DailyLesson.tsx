@@ -1,3 +1,4 @@
+import { callAI, extractText } from "../lib/ai";
 import React, { useState, useEffect } from "react";
 import { StudyModule, QuizQuestion, DayProgress } from "../types";
 import { 
@@ -19,6 +20,8 @@ import {
 interface DailyLessonProps {
   module: StudyModule;
   userProfession: string;
+  userId?: string;
+  isPremium?: boolean;
   onBack: () => void;
   onCompleteDay: (day: number, score: number, notes: string) => void;
   existingProgress?: DayProgress;
@@ -39,6 +42,8 @@ interface GeneratedLessonData {
 export default function DailyLesson({ 
   module, 
   userProfession, 
+  userId,
+  isPremium,
   onBack, 
   onCompleteDay,
   existingProgress 
@@ -74,7 +79,6 @@ export default function DailyLesson({
     setCorrectCount(0);
 
     try {
-      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
       const prompt = `You are the Chief AI Corporate Governance Trainer for the IICA Independent Directors Databank exam preparation course.
 Generate an elite, executive-level study lesson for:
 Day ${module.day}: ${module.title}
@@ -93,25 +97,20 @@ Return ONLY a valid JSON object with these exact keys:
 }
 Generate exactly 3 checkpointQuestions. Return only the JSON, no markdown fences.`;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
+      const result = await callAI({
+        type: "lesson",
+        userId: userId || "anonymous",
+        isPremium: isPremium || false,
+        payload: {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
         }
-      );
+      });
 
-      if (!response.ok) {
-        throw new Error("Failed to communicate with AI generation engine.");
-      }
+      if (result.error) throw new Error(result.error);
 
-      const result = await response.json();
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Empty response from Gemini");
+      const text = extractText(result);
+      if (!text) throw new Error("Empty response from AI engine.");
 
       const data = JSON.parse(text.replace(/```json|```/g, "").trim());
       if (data.error) throw new Error(data.error);
