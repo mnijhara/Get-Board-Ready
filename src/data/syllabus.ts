@@ -426,44 +426,177 @@ export const syllabus: StudyModule[] = [
 export const sampleFlashcards: Flashcard[] = [
   {
     id: "fc_1",
-    topic: "Quorum",
+    topic: "Board Meeting Quorum",
     question: "What is the quorum requirement for board meetings under the Companies Act 2013?",
-    answer: "The quorum is 1/3rd of the total strength of the Board of Directors or 2 directors, whichever is higher. Participation via video conferencing is counted towards the quorum.",
+    answer: "1/3rd of the total strength of the Board OR 2 directors, whichever is higher. Video conferencing counts toward quorum.",
     section: "Section 174"
   },
   {
     id: "fc_2",
-    topic: "Term of Office",
-    question: "What is the maximum term an Independent Director can serve consecutively?",
-    answer: "An Independent Director can hold office for up to 5 consecutive years, and is eligible for re-appointment for a second term of 5 years by passing a Special Resolution. After 2 consecutive terms (10 years), a mandatory cooling-off period of 3 years is required before re-appointment.",
+    topic: "ID Term of Office",
+    question: "What is the maximum consecutive term an Independent Director can serve?",
+    answer: "2 consecutive terms of 5 years each = 10 years maximum. After that, 3-year cooling-off period mandatory before reappointment in the same company.",
     section: "Section 149(10) & 149(11)"
   },
   {
     id: "fc_3",
-    topic: "Audit Committee",
-    question: "What is the composition requirement of the Audit Committee under SEBI LODR?",
-    answer: "Under SEBI LODR Reg 18, the Audit Committee must have at least 3 members, all of whom must be financially literate. At least 2/3rds of the members must be Independent Directors, and the Chairperson MUST be an Independent Director.",
-    section: "SEBI LODR Regulation 18"
+    topic: "Audit Committee Composition",
+    question: "What is the minimum composition of the Audit Committee under SEBI LODR?",
+    answer: "Minimum 3 members. Majority must be Independent Directors. Chairperson must be an Independent Director. Under SEBI LODR Reg 18, at least 2/3rds must be IDs.",
+    section: "SEBI LODR Regulation 18 / Section 177"
   },
   {
     id: "fc_4",
-    topic: "Related Party Transactions",
-    question: "Does a Related Party Transaction in the ordinary course of business at arm's length require Board approval under Section 188?",
-    answer: "No. Transactions entered into by the company in its 'ordinary course of business' and done at 'arm's length basis' are exempt from the restrictive provisions and approvals of Section 188(1). However, Audit Committee approval is still generally required under SEBI/Omnibus policies.",
-    section: "Section 188(1) Proviso"
+    topic: "Material Pecuniary Relationship",
+    question: "When does a pecuniary relationship disqualify someone from being an Independent Director?",
+    answer: "When the transaction exceeds 10% of the company's revenues OR ₹2 crores, whichever is lower. Also if it exceeds 2% of the director's own income. Sitting fees and permitted reimbursements are excluded.",
+    section: "Section 149(6)"
   },
   {
     id: "fc_5",
-    topic: "Vigil Mechanism",
-    question: "Which unlisted public companies must establish a Vigil Mechanism under the Companies Act 2013?",
-    answer: "Unlisted public companies that have: (a) accepted deposits from the public, or (b) borrowed money from banks/public financial institutions in excess of Rs. 50 crore.",
-    section: "Section 177(9) & Rule 7"
+    topic: "ID Liability",
+    question: "When is an Independent Director personally liable for company fraud?",
+    answer: "Only when the fraud occurred with their knowledge AND consent/connivance, OR when they failed to act diligently. Good faith actions are protected under Section 149(12).",
+    section: "Section 149(12)"
   },
   {
     id: "fc_6",
-    topic: "Liability Shield",
-    question: "Under what conditions is an Independent Director held liable for company defaults?",
-    answer: "An Independent Director is only liable for acts of omission or commission which occurred with their knowledge (attributable through Board processes), and with their consent or connivance, or where they failed to act diligently.",
-    section: "Section 149(12)"
+    topic: "Board Meeting Notice",
+    question: "What is the minimum notice period required to convene a Board Meeting?",
+    answer: "7 days' notice in writing. For General Meetings (AGM/EGM), the minimum is 21 clear days. Note: 14 days applies to general notices, NOT board meetings.",
+    section: "Section 173(3)"
+  },
+  {
+    id: "fc_7",
+    topic: "AGM Notice Period",
+    question: "What is the minimum notice required for calling an Annual General Meeting?",
+    answer: "21 clear days' notice in writing to all members, directors, and auditors. 'Clear days' excludes the day of sending and the day of the meeting.",
+    section: "Section 101"
+  },
+  {
+    id: "fc_8",
+    topic: "Mandatory Board Meetings",
+    question: "How many Board Meetings must a company hold per year and what is the maximum gap?",
+    answer: "Minimum 4 Board Meetings per year. Maximum gap between any two consecutive meetings must not exceed 120 days.",
+    section: "Section 173(1)"
+  },
+  {
+    id: "fc_9",
+    topic: "Stock Options for IDs",
+    question: "Can an Independent Director receive stock options?",
+    answer: "NO. IDs are prohibited from receiving stock options. They can receive sitting fees, commission within permitted limits, and reimbursement of expenses. This prevents conflicts of interest.",
+    section: "Section 149(9) / SEBI LODR"
+  },
+  {
+    id: "fc_10",
+    topic: "Minimum ID Requirement",
+    question: "What is the minimum proportion of Independent Directors required on a listed company's board?",
+    answer: "At least 1/3rd of the Board. If the Chairperson is a promoter or related to promoters, or is an Executive Director (MD/CEO), at least HALF the board must be IDs.",
+    section: "Section 149(4) / SEBI LODR Regulation 17"
+  },
+  {
+    id: "fc_11",
+    topic: "CSR Obligation",
+    question: "Which companies are required to spend on CSR under Section 135?",
+    answer: "Companies with: Net worth ≥ ₹500 crore, OR Turnover ≥ ₹1,000 crore, OR Net profit ≥ ₹5 crore in any of the three preceding financial years. Must spend 2% of average net profits of the last 3 years.",
+    section: "Section 135"
+  },
+  {
+    id: "fc_12",
+    topic: "CSR Unspent Funds",
+    question: "What must a company do with unspent CSR funds for ongoing projects?",
+    answer: "Transfer to a special 'Unspent CSR Account' within 30 days of financial year end. Must be utilized within 3 years. If still unspent, transfer to Schedule VII funds (e.g., PM CARES Fund).",
+    section: "Section 135(6)"
+  },
+  {
+    id: "fc_13",
+    topic: "NFRA",
+    question: "What is the National Financial Reporting Authority (NFRA) and under which section was it established?",
+    answer: "NFRA is an independent regulator established under Section 132 of the Companies Act 2013 to oversee auditing standards and auditor accountability — a direct reform post the Satyam scandal.",
+    section: "Section 132"
+  },
+  {
+    id: "fc_14",
+    topic: "Satyam Red Flags",
+    question: "What were the key red flags in the Satyam case that IDs should have caught?",
+    answer: "1) Promoter proposed acquiring family-owned companies (Maytas Infra & Properties) — clear RPT conflict. 2) Inflated cash balances not independently verified. 3) PwC paid double market rate = auditor independence compromise.",
+    section: "Case Study / Corporate Governance"
+  },
+  {
+    id: "fc_15",
+    topic: "EGM Requisition",
+    question: "If the Board fails to call an EGM within 21 days of receiving a member requisition, what happens?",
+    answer: "The requisitioning members themselves can call and conduct the EGM within 45 days of making the original requisition, even without Board approval.",
+    section: "Section 100(4)"
+  },
+  {
+    id: "fc_16",
+    topic: "Share Nature",
+    question: "What is the legal nature of shares or debentures under Section 44 of the Companies Act 2013?",
+    answer: "Shares and debentures are MOVABLE PROPERTY. They can be transferred freely like any movable asset, subject to the company's Articles of Association.",
+    section: "Section 44"
+  },
+  {
+    id: "fc_17",
+    topic: "Deposit Limits",
+    question: "What is the maximum deposit a company can accept from members and the public?",
+    answer: "25% of the company's net worth (excluding inter-corporate deposits). This applies to public deposits from both members/shareholders and the general public combined.",
+    section: "Section 73(2)"
+  },
+  {
+    id: "fc_18",
+    topic: "RPT Red Flag",
+    question: "Why are frequent Related Party Transactions (RPTs) a governance red flag?",
+    answer: "Excessive RPTs can allow promoters to divert company resources to their own entities. IDs must scrutinize ALL RPTs for arm's length pricing and business necessity. Section 188 requires Board/shareholder approval beyond certain thresholds.",
+    section: "Section 188"
+  },
+  {
+    id: "fc_19",
+    topic: "Cash Flow Red Flag",
+    question: "A company shows rising profits but consistently negative operating cash flow. What does this signal?",
+    answer: "This is a major red flag suggesting revenue may be 'paper profits' only — possibly through aggressive accounting, fake sales, or manipulated accruals. IDs should demand independent cash flow verification.",
+    section: "Financial Forensics"
+  },
+  {
+    id: "fc_20",
+    topic: "Woman Director",
+    question: "Is a woman director mandatory for listed companies under SEBI LODR?",
+    answer: "YES. Regulation 17 of SEBI LODR mandates at least ONE woman director on the board of every listed company. Non-compliance attracts penalties.",
+    section: "SEBI LODR Regulation 17"
+  },
+  {
+    id: "fc_21",
+    topic: "Shareholder vs Debenture Holder",
+    question: "What is the key difference between a shareholder and a debenture holder?",
+    answer: "Shareholders are OWNERS with voting rights and get dividends (profit-dependent). Debenture holders are CREDITORS who receive fixed interest regardless of profit. Only debenture holders have no voting rights (normally).",
+    section: "Section 43-44 / Company Law Basics"
+  },
+  {
+    id: "fc_22",
+    topic: "NRC Composition",
+    question: "What is the minimum composition of the Nomination and Remuneration Committee (NRC)?",
+    answer: "Minimum 3 non-executive directors, of which at least ONE THIRD must be Independent Directors. The Chairperson must be an Independent Director. For listed companies, stricter requirements apply under SEBI LODR.",
+    section: "Section 178 / SEBI LODR Regulation 19"
+  },
+  {
+    id: "fc_23",
+    topic: "Auditor Fraud Reporting",
+    question: "What must an auditor do if they discover fraud during an audit?",
+    answer: "For fraud ≥ ₹1 crore: Report to Central Government within 60 days. For smaller frauds: Report to Audit Committee/Board within 2 days. Failure to report = fine up to ₹25 lakh.",
+    section: "Section 143(12)"
+  },
+  {
+    id: "fc_24",
+    topic: "Books of Account",
+    question: "What is the penalty for a company failing to maintain proper books of account?",
+    answer: "Company: Fine of ₹25,000 to ₹5,00,000. Officers in default: Imprisonment up to 1 year AND/OR fine of ₹10,000 to ₹50,000.",
+    section: "Section 128(6)"
+  },
+  {
+    id: "fc_25",
+    topic: "ID Appointment for Private Companies",
+    question: "Are private companies required to appoint Independent Directors?",
+    answer: "Generally NO — the ID requirement primarily applies to listed companies and certain public companies. However, if a private company is a subsidiary of a listed company or meets certain criteria, it may need IDs on specific committees.",
+    section: "Section 149(4)"
   }
 ];

@@ -1,3 +1,4 @@
+import { questionBank, questionsByCategory } from "../data/questionBank";
 import { callAI, extractText } from "../lib/ai";
 import React, { useState, useEffect } from "react";
 import { MockAttempt, QuizQuestion } from "../types";
@@ -78,40 +79,76 @@ export default function MockExam({ userId, userProfession, onSaveAttempt, attemp
     setCurrentIndex(0);
 
     try {
-      const prompt = `You are the IICA Exam Blueprint Generator. Generate exactly ${questionCount} Multiple Choice Questions for the Independent Directors Databank Online Proficiency Self-Assessment Test.
+      // Step 1: Use real verified questions from question bank (shuffled)
+      const realQuestions = [...questionBank]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.min(Math.floor(questionCount * 0.6), questionBank.length))
+        .map(q => ({
+          question: q.question,
+          category: q.category,
+          options: q.options,
+          correctAnswerIndex: q.correctAnswerIndex,
+          explanation: q.explanation,
+          section: q.section,
+          isVerified: true
+        }));
+
+      const aiNeeded = questionCount - realQuestions.length;
+
+      if (aiNeeded > 0) {
+        // Step 2: Top up with AI-generated questions for variety
+        const prompt = `You are the IICA Exam Blueprint Generator. Generate exactly ${aiNeeded} Multiple Choice Questions for the Independent Directors Databank Online Proficiency Self-Assessment Test.
 Categories: ${selectedCats.join(", ")}.
 Make 60% situational/case-study type and 40% threshold/memorization type.
-Each question must have a thorough explanation citing the precise legal section.
+Each question must cite the precise legal section and have a thorough explanation.
+Do NOT repeat these already included question topics: ${realQuestions.slice(0,5).map(q=>q.question.substring(0,50)).join('; ')}.
 
 Return ONLY a valid JSON object:
 { "questions": [{ "question": "...", "category": "Companies Act", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." }] }
 Return only the JSON, no markdown fences.`;
 
-      const result = await callAI({
-        type: "exam",
-        userId,
-        isPremium,
-        payload: {
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
+        const result = await callAI({
+          type: "exam",
+          userId,
+          isPremium,
+          payload: {
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          }
+        });
+
+        if (result.limitReached) {
+          if (!isPremium) onTriggerUpgrade();
+          // Fall back to only real questions if AI limit reached
+          setQuestions([...realQuestions].sort(() => Math.random() - 0.5).slice(0, questionCount));
+          return;
         }
-      });
 
-      if (result.limitReached) {
-        if (!isPremium) onTriggerUpgrade();
-        throw new Error(result.error || "Daily exam limit reached.");
+        if (!result.error) {
+          const text = extractText(result);
+          if (text) {
+            try {
+              const data = JSON.parse(text.replace(/```json|```/g, "").trim());
+              if (data.questions?.length > 0) {
+                const combined = [...realQuestions, ...data.questions]
+                  .sort(() => Math.random() - 0.5)
+                  .slice(0, questionCount);
+                setQuestions(combined);
+              } else {
+                setQuestions([...realQuestions].sort(() => Math.random() - 0.5));
+              }
+            } catch {
+              setQuestions([...realQuestions].sort(() => Math.random() - 0.5));
+            }
+          } else {
+            setQuestions([...realQuestions].sort(() => Math.random() - 0.5));
+          }
+        } else {
+          setQuestions([...realQuestions].sort(() => Math.random() - 0.5));
+        }
+      } else {
+        setQuestions([...realQuestions].sort(() => Math.random() - 0.5).slice(0, questionCount));
       }
-      if (result.error) throw new Error(result.error);
-
-      const text = extractText(result);
-      if (!text) throw new Error("Empty response from AI engine.");
-
-      const data = JSON.parse(text.replace(/```json|```/g, "").trim());
-      if (!data.questions || data.questions.length === 0) {
-        throw new Error("Exam paper returned with blank questions. Try again.");
-      }
-
-      setQuestions(data.questions);
       setStartTime(Date.now());
       if (questionCount === 50) {
         setTimeRemaining(75 * 60); // Official IICA Online Proficiency Self-Assessment Test (OPSAT) 75-minute limit
