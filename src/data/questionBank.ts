@@ -468,6 +468,143 @@ export const questionBank: ExamQuestion[] = [
     explanation: "Equity shares provide voting rights and allow participation in management. Preference shares get priority in dividends but have limited or no voting rights.",
     category: "Companies Act 2013",
     section: "Section 43"
+  },
+
+  // ── NEW QUESTIONS FROM JULY 19-21, 2026 COMMUNITY SESSIONS ──
+  {
+    id: "q051",
+    question: "A person becomes a 'member' of a company when:",
+    options: ["They are employed by the company", "They are appointed as a director", "Their name is entered in the Register of Members", "They purchase debentures"],
+    correctAnswerIndex: 2,
+    explanation: "Membership is established when a person's name is entered in the Register of Members. Buying shares alone is not sufficient — formal registration is required.",
+    category: "Companies Act 2013",
+    section: "Section 2(55)"
+  },
+  {
+    id: "q052",
+    question: "Which section of the Companies Act requires directors to act with due care, skill, and diligence?",
+    options: ["Section 149", "Section 166(3)", "Section 177", "Section 188"],
+    correctAnswerIndex: 1,
+    explanation: "Section 166(3) requires directors to act with due and reasonable care, skill, and diligence and to exercise independent judgment. This is a core fiduciary duty.",
+    category: "Companies Act 2013",
+    section: "Section 166(3)"
+  },
+  {
+    id: "q053",
+    question: "Under Section 244, depositors can file oppression complaints if they represent at least what percentage of total deposits?",
+    options: ["2%", "5%", "10%", "15%"],
+    correctAnswerIndex: 1,
+    explanation: "Under Section 244, depositors can file oppression complaints if they represent 5% of total deposits OR at least 100 depositors, whichever is fewer. This prevents frivolous complaints while protecting significant creditors.",
+    category: "Companies Act 2013",
+    section: "Section 244"
+  },
+  {
+    id: "q054",
+    question: "Which section grants NCLT wide remedial powers including removing directors and recovering misapplied funds in oppression cases?",
+    options: ["Section 241", "Section 242", "Section 244", "Section 246"],
+    correctAnswerIndex: 1,
+    explanation: "Section 242 grants NCLT wide powers including regulatory orders, remedial orders (removing directors, recovering misapplied funds), and protective orders. Section 241 deals with filing applications for oppression/mismanagement.",
+    category: "Companies Act 2013",
+    section: "Section 242"
+  },
+  {
+    id: "q055",
+    question: "Under Section 236, what minimum percentage of shareholders must agree before a parent company can squeeze out minority shareholders?",
+    options: ["75%", "80%", "85%", "90%"],
+    correctAnswerIndex: 3,
+    explanation: "Section 236 allows parent companies to acquire minority shareholders' shares if at least 90% of shareholders have agreed to the transfer. This ensures overwhelming consent before forcing minority shareholders to sell.",
+    category: "Companies Act 2013",
+    section: "Section 236"
+  },
+  {
+    id: "q056",
+    question: "Within how many days must parties notify the Competition Commission of India (CCI) of a qualifying combination?",
+    options: ["15 days", "30 days", "45 days", "60 days"],
+    correctAnswerIndex: 1,
+    explanation: "Parties must notify the CCI of qualifying combinations within 30 days of execution. The CCI reviews whether the combination causes adverse effects on competition, typically approving within 210 days.",
+    category: "Corporate Governance",
+    section: "Competition Act / CCI"
+  },
+  {
+    id: "q057",
+    question: "What minimum Debenture Redemption Reserve (DRR) must a company maintain before debenture redemption commences?",
+    options: ["10% of debenture value", "20% of debenture value", "25% of debenture value", "30% of debenture value"],
+    correctAnswerIndex: 2,
+    explanation: "Section 71(2) mandates companies to create a DRR of at least 25% of debenture value before redemption commences. This reserve ensures adequate funds are available for repayment.",
+    category: "Companies Act 2013",
+    section: "Section 71(2)"
+  },
+  {
+    id: "q058",
+    question: "Within how many months of issue closure must a debenture trust deed be executed for secured debentures?",
+    options: ["3 months", "6 months", "9 months", "12 months"],
+    correctAnswerIndex: 1,
+    explanation: "Under Section 71(1), the debenture trust deed must be executed within 6 months of issue closure for secured debentures. The trustee protects debenture holders' interests.",
+    category: "Companies Act 2013",
+    section: "Section 71(1)"
+  },
+  {
+    id: "q059",
+    question: "Within how many days must Form CHG-1 be filed after creation or modification of a charge?",
+    options: ["15 days", "21 days", "30 days", "60 days"],
+    correctAnswerIndex: 2,
+    explanation: "Form CHG-1 must be filed within 30 days of charge creation or modification. Non-compliance leads to penalties, and the charge becomes void against the liquidator and creditors.",
+    category: "Companies Act 2013",
+    section: "Section 77 / CHG-1"
+  },
+  {
+    id: "q060",
+    question: "What minimum subscription percentage is required before allotment in a public issue of debentures?",
+    options: ["75% of issue size", "80% of issue size", "90% of issue size", "100% of issue size"],
+    correctAnswerIndex: 2,
+    explanation: "Public issues of debentures require minimum 90% subscription before allotment. If not met within the specified period, all application money must be refunded.",
+    category: "Companies Act 2013",
+    section: "SEBI / Debenture Rules"
+  },
+  {
+    id: "q061",
+    question: "In the Bhushan Power & Steel (BPSL) insolvency case, why did the Supreme Court reverse the approved resolution plan?",
+    options: ["Financial creditors withdrew consent", "Non-compliance with IBC procedural requirements including non-filing of Form H", "Failure of JSW Steel to infuse funds", "Dispute between JSW Steel and operational creditors"],
+    correctAnswerIndex: 1,
+    explanation: "The Supreme Court found major procedural lapses — non-filing of Form H, failure to verify Section 29A eligibility, and exceeding the 270-day CIRP timeline. This led to reversal and liquidation order.",
+    category: "Corporate Governance",
+    section: "IBC / CIRP Case Study"
+  },
+  {
+    id: "q062",
+    question: "What CoC voting threshold amendment enabled the Alok Industries resolution plan approval?",
+    options: ["Introduction of Section 32A of IBC", "Reduction of CoC voting threshold from 75% to 66%", "Extension of CIRP timeline from 270 to 330 days", "Ordinance allowing retrospective immunity"],
+    correctAnswerIndex: 1,
+    explanation: "The June 2018 ordinance reduced the voting threshold for plan approval from 75% to 66%. This allowed the Reliance-JM Financial ARC plan to be approved, rescuing Alok Industries from liquidation.",
+    category: "Corporate Governance",
+    section: "IBC Amendment 2018"
+  },
+  {
+    id: "q063",
+    question: "In the Alok Industries insolvency case, what percentage haircut did the Committee of Creditors accept?",
+    options: ["50%", "70%", "83%", "90%"],
+    correctAnswerIndex: 2,
+    explanation: "The CoC approved the plan with an 83% haircut — creditors recovered only about 17% of dues. This prioritized company revival over full debt recovery.",
+    category: "Corporate Governance",
+    section: "IBC Case Study"
+  },
+  {
+    id: "q064",
+    question: "How should a company strengthen its Independent Directors' effectiveness per SEBI LODR?",
+    options: ["By excluding them from key meetings", "By conducting regular performance evaluation and providing training", "By avoiding disclosures to IDs", "By removing independent directors frequently"],
+    correctAnswerIndex: 1,
+    explanation: "SEBI LODR promotes structured evaluation and orientation programs to strengthen directors' competence, ensure independence, and improve governance effectiveness. Regular evaluation is mandatory for listed companies.",
+    category: "SEBI LODR",
+    section: "SEBI LODR / Schedule IV"
+  },
+  {
+    id: "q065",
+    question: "Which of the following best preserves an Independent Director's independence in practice?",
+    options: ["Maintaining transparent disclosures and conflict-of-interest registers", "Avoiding Board meetings when conflicts arise", "Ignoring dissent opinions to maintain harmony", "Keeping related party information confidential from the Board"],
+    correctAnswerIndex: 0,
+    explanation: "Transparent disclosures, conflict-of-interest registers, and open Board deliberations preserve directors' independence and ensure ethical decision-making per Schedule IV of the Companies Act.",
+    category: "Corporate Governance",
+    section: "Schedule IV / Section 149"
   }
 ];
 
