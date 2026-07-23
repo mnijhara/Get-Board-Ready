@@ -1,3 +1,4 @@
+import Logo from "./Logo";
 import React, { useState } from "react";
 import { X, Loader2, ShieldCheck, Sparkles, LogIn, UserPlus, Mail, User, Briefcase, AlertCircle } from "lucide-react";
 import { getUserProfileByEmail } from "../firebase";
@@ -100,13 +101,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onSignupProceed, de
 
         {/* Header */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5 text-amber-400" />
-            <div>
-              <span className="font-bold text-base block">Get Board Ready</span>
-              <span className="text-[10px] text-slate-400 font-mono">IICA Independent Director Exam Prep</span>
-            </div>
-          </div>
+          <Logo size="sm" variant="light" showText={true} />
           <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
             <X className="h-5 w-5" />
           </button>

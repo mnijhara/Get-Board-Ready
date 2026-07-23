@@ -18,7 +18,8 @@ import {
   XCircle,
   Lock,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from "lucide-react";
 
 interface MockExamProps {

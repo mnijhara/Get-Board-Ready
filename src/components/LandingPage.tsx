@@ -1,3 +1,4 @@
+import Logo from "./Logo";
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Award, 

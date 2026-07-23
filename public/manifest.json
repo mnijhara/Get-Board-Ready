@@ -1,18 +1,50 @@
 {
   "name": "Get Board Ready",
   "short_name": "BoardReady",
-  "description": "IICA Independent Director Exam Prep — AI-Powered",
+  "description": "IICA Independent Director Exam Prep — AI-Powered 30-Day Programme",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#4F46E5",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "categories": ["education", "business"],
+  "lang": "en-IN",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "label": "Get Board Ready — IICA Exam Prep"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "AI Tutor",
+      "short_name": "Tutor",
+      "description": "Open AI Boardroom Tutor",
+      "url": "/?tab=tutor",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Mock Exam",
+      "short_name": "Exam",
+      "description": "Start a Mock Exam",
+      "url": "/?tab=mock",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
     }
   ]
 }

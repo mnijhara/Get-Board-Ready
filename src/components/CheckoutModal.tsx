@@ -1,3 +1,4 @@
+import Logo from "./Logo";
 import React, { useState } from "react";
 import { ShieldCheck, Sparkles, X, CheckCircle, Loader2 } from "lucide-react";
 
@@ -127,10 +128,7 @@ export default function CheckoutModal({ onClose, onUpgradeSuccessful, userEmail,
 
         {/* Header */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5 text-amber-400 animate-pulse" />
-            <h3 className="font-bold text-base">Upgrade to Get Board Ready Pro</h3>
-          </div>
+          <div className="flex items-center space-x-2"><Logo size="sm" variant="light" showText={false} /><h3 className="font-bold text-base">Upgrade to Pro</h3></div>
           {status === "idle" && (
             <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
               <X className="h-5 w-5" />

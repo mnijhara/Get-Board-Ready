@@ -1,3 +1,4 @@
+import Logo from "./Logo";
 import React, { useState, useEffect } from "react";
 import Certificate from "./Certificate";
 import SupportPage from "./SupportPage";
