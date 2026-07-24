@@ -10,7 +10,6 @@ import {
   CheckCircle, 
   ChevronRight, 
   ClipboardList, 
-  Cpu, 
   ExternalLink, 
   HelpCircle, 
   Layers, 
@@ -96,19 +95,7 @@ export default function Dashboard({
       {/* Top Banner / Navigation */}
       <header className="bg-slate-900 text-white border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-indigo-600 p-2 rounded-lg">
-              <Cpu className="h-5 w-5 text-indigo-100" />
-            </div>
-            <div>
-              <span className="font-sans font-bold text-base tracking-tight block">
-                Get Board Ready
-              </span>
-              <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-wider block">
-                Autonomous Executive Portal
-              </span>
-            </div>
-          </div>
+          <Logo size="sm" variant="light" showText={true} />
 
           <div className="flex items-center space-x-4">
             {profile.isPremium ? (

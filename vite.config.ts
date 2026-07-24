@@ -11,6 +11,7 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    publicDir: 'public',
     build: {
       rollupOptions: {
         output: {

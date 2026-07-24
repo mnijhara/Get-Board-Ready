@@ -15,6 +15,13 @@ import Flashcards from "./components/Flashcards";
 import CheckoutModal from "./components/CheckoutModal";
 import AuthModal from "./components/AuthModal";
 
+// Track key events via Plausible analytics
+function track(event: string, props?: Record<string, string | number>) {
+  try {
+    (window as any).plausible?.(event, { props });
+  } catch {}
+}
+
 export default function App() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [mockAttempts, setMockAttempts] = useState<MockAttempt[]>([]);

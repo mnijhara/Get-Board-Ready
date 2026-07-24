@@ -132,14 +132,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
       {/* Header Banner */}
       <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="bg-slate-900 text-white p-2 rounded-lg">
-              <Cpu className="h-5 w-5 text-indigo-400" />
-            </div>
-            <span className="font-sans font-bold text-lg tracking-tight text-slate-900">
-              Get Board Ready
-            </span>
-          </div>
+          <Logo size="md" variant="color" showText={true} />
           <div className="flex items-center space-x-4">
             <span className="text-xs font-mono text-slate-500 hidden sm:inline-block">
               AUTONOMOUS EXECUTIVE ENGINE
@@ -1402,8 +1395,7 @@ export default function LandingPage({ onEnroll, onLogin }: LandingPageProps) {
       <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="flex justify-center items-center space-x-2 text-white">
-            <Cpu className="h-5 w-5 text-indigo-400" />
-            <span className="font-bold text-base">Get Board Ready</span>
+            <Logo size="sm" variant="light" showText={true} />
           </div>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             This application is an autonomous, AI-driven preparation portal customized with advanced LLM prompting to help board candidates pass corporate governance exams.
